@@ -21,6 +21,8 @@ from ros2_generate_interface_docs import utils
 
 from rosidl_runtime_py import get_interface_path
 
+action_list_str = """<h2>Action types</h2> <div class="msg-list"> <ul> %s </ul> </div>"""
+
 
 def generate_action_doc(action, action_template, path):
     package, interface, base_type = utils.resource_name(action)
@@ -35,20 +37,16 @@ def generate_action_doc(action, action_template, path):
     return action_template % d
 
 
-def generate_action_index(package, file_d, actions):
-    d = {'package': package, 'msg_list': '', 'srv_list': '',
-         'action_list': '',
-         'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
+def generate_action_index(package, file_directory, actions):
+    package_action_dic = utils._TEMPLATE_DIC
+    package_action_dic['package'] = package
+    package_action_dic['date'] = str(time.strftime('%a, %d %b %Y %H:%M:%S'))
     if actions:
-        d['action_list'] = """<h2>Action types</h2>
-<div class="msg-list">
-  <ul>
-%s
-  </ul>
-</div>""" % '\n'.join([' <li>%s</li>' % utils._href('../../html/' + package + '/' + m + '.html', m)
-                       for m in actions])
-    msg_index_template = utils.load_tmpl('msg-index.template')
-    file_p = os.path.join(file_d, 'index-msg.html')
-    text = msg_index_template % d
-    with open(file_p, 'w') as f:
+        package_action_dic['action_list'] = action_list_str % '\n'.join(
+            [' <li>%s</li>' % utils._href('../../html/' + package + '/' + action + '.html', action)
+             for action in actions])
+    msg_index_template = utils.load_template('msg-index.template')
+    file_path = os.path.join(file_directory, 'index-msg.html')
+    text = msg_index_template % package_action_dic
+    with open(file_path, 'w') as f:
         f.write(text)

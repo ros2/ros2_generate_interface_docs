@@ -28,6 +28,24 @@ from rosidl_runtime_py import get_message_interfaces
 from rosidl_runtime_py import get_service_interfaces
 
 
+# generic function takes op and its argument
+def generate_interfaces(generate_index, generate_doc, interfaces,
+                        html_dir, template, interface_type):
+    for package_name, names in sorted(interfaces.items(), key=lambda item: item[0]):
+        package_directory = os.path.join(html_dir, package_name)
+        interface_type_directory = os.path.join(package_directory, interface_type)
+        os.makedirs(interface_type_directory, exist_ok=True)
+        generate_index(package_name,
+                       package_directory,
+                       interfaces[package_name])
+        for name in names:
+            text = generate_doc('%s/%s' % (package_name, name),
+                                template,
+                                os.path.join(package_directory, name + '.html'))
+            with open(os.path.join(package_directory, name + '.html'), 'w') as f:
+                f.write(text)
+
+
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         description='Generate interfaces public API documentation',
@@ -38,61 +56,36 @@ def main(argv=sys.argv[1:]):
     args = parser.parse_args(argv)
 
     output_dir = args.outputdir
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
     html_dir = os.path.join(output_dir, 'html')
-    if not os.path.exists(html_dir):
-        os.makedirs(html_dir)
+    os.makedirs(html_dir, exist_ok=True)
 
-    msg_template = utils.load_tmpl('msg.template')
+    msg_template = utils.load_template('msg.template')
+    action_template = utils.load_template('action.template')
 
-    message_interfaces = get_message_interfaces()
-    for package_name in sorted(message_interfaces):
-        package_d = os.path.join(html_dir, package_name)
-        msg_d = os.path.join(package_d, 'msg')
-        if not os.path.exists(msg_d):
-            os.makedirs(msg_d)
-        msg_utils.generate_msg_index(package_name, package_d, message_interfaces[package_name])
-        for message_name in sorted(message_interfaces[package_name]):
-            print(message_name)
-            text = msg_utils.generate_msg_doc('%s/%s' % (package_name, message_name),
-                                              msg_template,
-                                              package_d + '/' + message_name + '.html')
-            with open(package_d + '/' + message_name + '.html', 'w') as f:
-                f.write(text)
+    # generate msg interfaces
+    generate_interfaces(msg_utils.generate_msg_index,
+                        msg_utils.generate_msg_doc,
+                        get_message_interfaces(),
+                        html_dir,
+                        msg_template,
+                        'msg')
 
-    action_template = utils.load_tmpl('action.template')
-    action_interfaces = get_action_interfaces()
-    for package_name in sorted(action_interfaces):
-        package_d = os.path.join(html_dir, package_name)
-        action_d = os.path.join(package_d, 'action')
-        if not os.path.exists(action_d):
-            os.makedirs(action_d)
-        action_utils.generate_action_index(package_name,
-                                           package_d,
-                                           action_interfaces[package_name])
-        for action_name in sorted(action_interfaces[package_name]):
-            print(action_name)
-            text = action_utils.generate_action_doc('%s/%s' % (package_name, action_name),
-                                                    action_template,
-                                                    package_d + '/' + action_name + '.html')
-            with open(package_d + '/' + action_name + '.html', 'w') as f:
-                f.write(text)
+    # generate srv interfaces
+    generate_interfaces(srv_utils.generate_srv_index,
+                        srv_utils.generate_srv_doc,
+                        get_service_interfaces(),
+                        html_dir,
+                        msg_template,
+                        'srv')
 
-    service_interfaces = get_service_interfaces()
-    for package_name in sorted(service_interfaces):
-        package_d = os.path.join(html_dir, package_name)
-        srv_d = os.path.join(package_d, 'srv')
-        if not os.path.exists(srv_d):
-            os.makedirs(srv_d)
-        srv_utils.generate_srv_index(package_name, package_d, service_interfaces[package_name])
-        for srv_name in sorted(service_interfaces[package_name]):
-            print(srv_name)
-            text = srv_utils.generate_srv_doc('%s/%s' % (package_name, srv_name),
-                                              msg_template,
-                                              package_d + '/' + srv_name + '.html')
-            with open(package_d + '/' + srv_name + '.html', 'w') as f:
-                f.write(text)
+    # generate action interfaces
+    generate_interfaces(action_utils.generate_action_index,
+                        action_utils.generate_action_doc,
+                        get_action_interfaces(),
+                        html_dir,
+                        action_template,
+                        'action')
 
     utils.copy_css_style(html_dir)
 

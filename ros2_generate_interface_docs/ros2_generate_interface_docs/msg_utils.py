@@ -31,46 +31,18 @@ try:
 except ImportError:
     from io import StringIO
 
+message_list_str = """<h2>Message types</h2><div class="msg-list"> <ul> %s </ul> </div>"""
+
 
 def _generate_msg_text_from_spec(package, type_, spec, buff=None, indent=0):
     if buff is None:
         buff = StringIO()
 
-    feedback_namespaced_type = NamespacedType([package, 'msg'], type_)
-    imported_message = import_message_from_namespaced_type(feedback_namespaced_type)
+    namespaced_type = NamespacedType([package, 'msg'], type_)
+    imported_message = import_message_from_namespaced_type(namespaced_type)
 
-    # include constants
-    ignored_keys = ['__slots__', '__doc__', '_fields_and_field_types', 'SLOT_TYPES', '__init__',
-                    '__repr__', '__eq__', '__hash__', 'get_fields_and_field_types', '__module__']
-    ignored_keys += list(imported_message.get_fields_and_field_types().keys())
-    ignored_keys += ['_'+x for x in imported_message.get_fields_and_field_types().keys()]
-    for key in imported_message.__dict__.keys():
-        if key not in ignored_keys:
-            buff.write('%s %s=%s<br />' % ('&nbsp;' * indent, key, getattr(imported_message, key)))
+    buff = utils.generate_fancy_doc(imported_message, buff, indent, get_message_slot_types, False)
 
-    # include fields
-    message_fields = imported_message.get_fields_and_field_types()
-    for field in message_fields.keys():
-        if(message_fields[field] not in BASIC_TYPES and
-           'string' not in message_fields[field]):
-            slot_type = get_message_slot_types(imported_message)[field]
-            if(isinstance(slot_type, AbstractNestedType)):
-                if(isinstance(slot_type.value_type, NamespacedType)):
-                    pkg_name, in_type, msg_name = map(str, slot_type.value_type.namespaced_name())
-                    buff.write('%s%s %s<br />' % ('&nbsp;' * indent,
-                                                  utils._href('../../' + pkg_name + '/msg/'
-                                                              + msg_name + '.html',
-                                                              '/'.join(slot_type.value_type.
-                                                                       namespaced_name())),
-                                                  field))
-            else:
-                pkg_name, msg_name = message_fields[field].split('/')
-                buff.write('%s%s %s<br />' % ('nbsp;' * indent,
-                                              utils._href('../../' + pkg_name + '/msg/' + msg_name
-                                                          + '.html', message_fields[field]),
-                                              msg_name))
-        else:
-            buff.write('%s%s %s<br />' % ('&nbsp;' * indent, message_fields[field], field))
     return buff.getvalue()
 
 
@@ -88,20 +60,16 @@ def generate_msg_doc(msg, msg_template, path):
     return msg_template % d
 
 
-def generate_msg_index(package, file_d, msgs):
-    d = {'package': package, 'msg_list': '', 'srv_list': '',
-         'action_list': '',
-         'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
+def generate_msg_index(package, file_directory, msgs):
+    package_message_dic = utils._TEMPLATE_DIC
+    package_message_dic['package'] = package
+    package_message_dic['date'] = str(time.strftime('%a, %d %b %Y %H:%M:%S'))
     if msgs:
-        d['msg_list'] = """<h2>Message types</h2>
-<div class="msg-list">
-  <ul>
-%s
-  </ul>
-</div>""" % '\n'.join([' <li>%s</li>' % utils._href('../../html/' + package + '/' + m + '.html', m)
-                       for m in msgs])
-    msg_index_template = utils.load_tmpl('msg-index.template')
-    file_p = os.path.join(file_d, 'index-msg.html')
-    text = msg_index_template % d
+        package_message_dic['msg_list'] = message_list_str % '\n'.join(
+            [' <li>%s</li>' % utils._href('../../html/' + package + '/' + msg + '.html', msg)
+             for msg in msgs])
+    msg_index_template = utils.load_template('msg-index.template')
+    file_p = os.path.join(file_directory, 'index-msg.html')
+    text = msg_index_template % package_message_dic
     with open(file_p, 'w') as f:
         f.write(text)
