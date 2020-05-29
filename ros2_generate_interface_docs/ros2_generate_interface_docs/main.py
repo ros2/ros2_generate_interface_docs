@@ -14,11 +14,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import os
 import sys
+
+from ros2_generate_interface_docs import msg_utils
+from ros2_generate_interface_docs import utils
+
+from rosidl_runtime_py import get_message_interfaces
+
+
+# generic function takes op and its argument
+def generate_interfaces(generate_index, generate_doc, interfaces,
+                        html_dir, template, interface_type):
+    for package_name, names in sorted(interfaces.items(), key=lambda item: item[0]):
+        package_directory = os.path.join(html_dir, package_name)
+        interface_type_directory = os.path.join(package_directory, interface_type)
+        os.makedirs(interface_type_directory, exist_ok=True)
+        generate_index(package_name,
+                       package_directory,
+                       interfaces[package_name])
+        for name in names:
+            generate_doc('%s/%s' % (package_name, name),
+                         template,
+                         os.path.join(package_directory, name + '.html'))
 
 
 def main(argv=sys.argv[1:]):
-    print('Hello ros2_generate_interface_docs')
+    parser = argparse.ArgumentParser(
+        description='Generate interfaces public API documentation',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '--outputdir', type=str, default='api',
+        help='Output directory')
+    args = parser.parse_args(argv)
+
+    output_dir = args.outputdir
+    os.makedirs(output_dir, exist_ok=True)
+    html_dir = os.path.join(output_dir, 'html')
+    os.makedirs(html_dir, exist_ok=True)
+
+    msg_template = utils.load_template('msg.template')
+
+    # generate msg interfaces
+    generate_interfaces(msg_utils.generate_msg_index,
+                        msg_utils.generate_msg_doc,
+                        get_message_interfaces(),
+                        html_dir,
+                        msg_template,
+                        'msg')
+
+    utils.copy_css_style(html_dir)
 
 
 if __name__ == '__main__':
