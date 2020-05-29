@@ -19,6 +19,5 @@ import pytest
 @pytest.mark.copyright
 @pytest.mark.linter
 def test_copyright():
-    excluded = ['cpplint.py']
-    rc = main(argv=['--exclude'] + excluded)
+    rc = main(argv=['.'])
     assert rc == 0, 'Found errors'

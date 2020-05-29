@@ -19,6 +19,5 @@ import pytest
 @pytest.mark.linter
 @pytest.mark.pep257
 def test_pep257():
-    excluded = ['ament_cpplint/cpplint.py']
-    rc = main(argv=['--exclude'] + excluded)
-    assert rc == 0, 'Found docblock style errors'
+    rc = main(argv=['.'])
+    assert rc == 0, 'Found code style errors / warnings'
