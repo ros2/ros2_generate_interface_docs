@@ -3,7 +3,7 @@
 This package will generate the static HTML documentation for messages, services and actions.
 It will create the documentation for all the available interfaces in your ROS2 workspace.
 It creates a folder with the name of the package (for example: action_msgs).
-In this folder it create another folders for actions, messages or services if they exists, inside each folder you will find the correspoding documentation of the interfaces.
+In this folder it creates other directories for actions, messages or services if they exist, inside each folder you will find the corresponding documentation of the interfaces.
 
 For example:
 
