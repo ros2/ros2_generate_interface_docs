@@ -14,22 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from io import StringIO
 import os
 import time
 
 from ros2_generate_interface_docs import utils
 
-from rosidl_parser.definition import AbstractNestedType, BASIC_TYPES, NamespacedType
+from rosidl_parser.definition import NamespacedType
 
 from rosidl_runtime_py import get_interface_path
 from rosidl_runtime_py import get_message_slot_types
 from rosidl_runtime_py.import_message import import_message_from_namespaced_type
 
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 message_list_str = """<h2>Message types</h2><div class="msg-list"> <ul> %s </ul> </div>"""
 

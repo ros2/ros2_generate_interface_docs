@@ -98,7 +98,9 @@ def generate_fancy_doc(imported_interface, buff, indent, get_slot_types, need_se
     ignored_keys_ += ['_'+x for x in imported_interface.get_fields_and_field_types().keys()]
     for key in imported_interface.__dict__.keys():
         if key not in ignored_keys_:
-            buff.write('%s %s=%s<br/>' % ('&nbsp;' * indent, key, getattr(imported_interface, key)))
+            buff.write('%s %s=%s<br/>' % ('&nbsp;' * indent,
+                                          key,
+                                          getattr(imported_interface, key)))
 #
     fields = imported_interface.get_fields_and_field_types()
     for field in fields.keys():

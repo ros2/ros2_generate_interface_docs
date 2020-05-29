@@ -14,9 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import OrderedDict
+from io import StringIO
 import os
 import time
-from collections import OrderedDict
 from typing import Any
 
 from ros2_generate_interface_docs import utils
@@ -25,11 +26,6 @@ from rosidl_parser.definition import NamespacedType
 
 from rosidl_runtime_py import get_interface_path
 from rosidl_runtime_py.import_message import import_message_from_namespaced_type
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 
 service_list_str = """<h2>Service types</h2><div class="msg-list"> <ul> %s </ul> </div>"""
