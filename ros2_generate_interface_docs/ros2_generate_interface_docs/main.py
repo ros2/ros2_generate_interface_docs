@@ -17,6 +17,7 @@
 import argparse
 import os
 import sys
+import time
 
 from ros2_generate_interface_docs import msg_utils
 from ros2_generate_interface_docs import utils
@@ -24,17 +25,12 @@ from ros2_generate_interface_docs import utils
 from rosidl_runtime_py import get_message_interfaces
 
 
-def generate_interfaces(generate_index, generate_doc, interfaces,
-                        html_dir, template, interface_type):
+def generate_interfaces(interfaces, html_dir, template, interface_type):
     """
     Generate the index and documentation for each message.
 
     Parameters
     ----------
-    generate_index: function
-        function to call to generate the index documentation.
-    generate_doc: function
-        function to call to generate the documentation for each interface
     interfaces: dict of {str : str[]}
         dictionary with the interface package name associated with all the interface
         for this package.
@@ -50,13 +46,24 @@ def generate_interfaces(generate_index, generate_doc, interfaces,
         package_directory = os.path.join(html_dir, package_name)
         interface_type_directory = os.path.join(package_directory, interface_type)
         os.makedirs(interface_type_directory, exist_ok=True)
-        generate_index(package_name,
-                       package_directory,
-                       interfaces[package_name])
+        utils.generate_index(package_name,
+                             package_directory,
+                             interfaces[package_name])
         for name in names:
-            generate_doc('%s/%s' % (package_name, name),
-                         template,
-                         os.path.join(package_directory, name + '.html'))
+            doc_dic = {'name': name,
+                       'package': package_name,
+                       'base_type': name,
+                       'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
+
+            if(interface_type == 'msg'):
+                doc_dic = {**doc_dic, **{'ext': 'msg', 'type': 'Message'}}
+                function_to_generate_text_from_spec = msg_utils.generate_msg_text_from_spec
+
+            utils.generate_doc('%s/%s' % (package_name, name),
+                               template,
+                               os.path.join(package_directory, name + '.html'),
+                               doc_dic,
+                               function_to_generate_text_from_spec)
 
 
 def main(argv=sys.argv[1:]):
@@ -75,9 +82,7 @@ def main(argv=sys.argv[1:]):
     os.makedirs(html_dir, exist_ok=True)
 
     # generate msg interfaces
-    generate_interfaces(msg_utils.generate_msg_index,
-                        msg_utils.generate_msg_doc,
-                        get_message_interfaces(),
+    generate_interfaces(get_message_interfaces(),
                         html_dir,
                         'msg.html.em',
                         'msg')

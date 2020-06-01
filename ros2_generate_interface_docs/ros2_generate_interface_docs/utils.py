@@ -15,10 +15,13 @@
 from io import StringIO
 import os
 import sys
-
+import time
 import em
 
 from rosidl_parser.definition import AbstractNestedType, BASIC_TYPES, NamespacedType
+
+from rosidl_runtime_py import get_interface_path
+
 
 _TEMPLATES_DIR = 'templates'
 IGNORED_KEYS = ['__slots__', '__doc__', '_fields_and_field_types', 'SLOT_TYPES', '__init__',
@@ -138,6 +141,60 @@ def load_template(filename):
         if not content:
             raise Exception("Template file '%s' is empty\n" % (filename))
         return content, filename
+
+
+def generate_doc(interface, interface_template, file_output_path, doc_dic, generate_text_from_spec):
+    """
+    Generate msg documentation.
+
+    This function write in a file the message static HTML site.
+
+    Parameters
+    ----------
+    interface: str
+        name of the interface
+    interface_template: str
+        name of the template
+    file_output_path: str
+        name of the file where the template will be written once filled
+    doc_dic: dict
+        dictionary with the data to field the index template
+
+    generate_text_from_spec: function
+
+    """
+    package, interface_type, base_type = resource_name(interface)
+    file_path = get_interface_path(interface)
+    with open(file_path, 'r', encoding='utf-8') as h:
+        spec = h.read().rstrip()
+
+    compact_definition = generate_text_from_spec(package, base_type, spec)
+    doc_dic['raw_text'] = generate_raw_text(spec)
+    write_template(interface_template, {**doc_dic, **compact_definition}, file_output_path)
+
+
+def generate_index(package, file_directory, interfaces):
+    """
+    Generate the message index page.
+
+    Parameters
+    ----------
+    package: str
+        package anme
+    file_directory: str
+        directory where the index site will be located
+    interfaces: str[]
+        list the the interfaces associated with the package
+
+    """
+    package_message_dic = {}
+    package_message_dic['package'] = package
+    package_message_dic['date'] = str(time.strftime('%a, %d %b %Y %H:%M:%S'))
+    if interfaces:
+        package_message_dic['links'] = [package + '/' + msg + '.html' for msg in interfaces]
+        package_message_dic['interface_list'] = interfaces
+    file_output_path = os.path.join(file_directory, 'index-msg.html')
+    write_template('msg-index.html.em', package_message_dic, file_output_path)
 
 
 def write_template(template_name, data, output_file):
