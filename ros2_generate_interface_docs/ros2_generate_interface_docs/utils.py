@@ -279,9 +279,9 @@ def generate_compact_definition(imported_interface, indent, get_slot_types):
             compact['constant_names'].append(getattr(imported_interface, key))
 
     fields = imported_interface.get_fields_and_field_types()
-    for field in fields.keys():
-        if(fields[field] not in BASIC_TYPES and
-           'string' not in fields[field]):
+    for field, field_types in fields.items():
+        if(field_types not in BASIC_TYPES and
+           'string' not in field_types):
             slot_type = get_slot_types(imported_interface)[field]
             if(isinstance(slot_type, AbstractNestedType)):
                 if(isinstance(slot_type.value_type, NamespacedType)):
@@ -291,12 +291,12 @@ def generate_compact_definition(imported_interface, indent, get_slot_types):
                     compact['field_types'].append('/'.join(slot_type.value_type.namespaced_name()))
                     compact['field_names'].append(field)
             else:
-                pkg_name, msg_name = fields[field].split('/')
+                pkg_name, msg_name = field_types.split('/')
                 compact['links'].append(pkg_name + '/msg/' + msg_name + '.html')
-                compact['field_types'].append(fields[field])
+                compact['field_types'].append(field_types)
                 compact['field_names'].append(msg_name)
         else:
             compact['links'].append('')
-            compact['field_types'].append(fields[field])
+            compact['field_types'].append(field_types)
             compact['field_names'].append(field)
     return compact
