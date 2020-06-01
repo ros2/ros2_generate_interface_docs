@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from io import StringIO
+import errno
 import os
 import sys
 import time
@@ -135,8 +136,8 @@ def load_template(filename):
     """
     filename = os.path.join(get_templates_dir(), filename)
     if not os.path.isfile(filename):
-        sys.stderr.write("Cannot locate template file '%s'\n" % (filename))
-        sys.exit(1)
+        raise FileNotFoundError(
+            errno.ENOENT, os.strerror(errno.ENOENT), filename)
     with open(filename, 'r') as f:
         content = f.read()
         if not content:
