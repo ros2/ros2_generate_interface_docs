@@ -230,8 +230,6 @@ def write_template(template_name, data, output_file):
         interpreter.string(template_content, template_path, locals=data)
         interpreter.invoke('afterFile')
     except Exception as e:  # noqa: F841
-        if os.path.exists(output_file):
-            os.remove(output_file)
         print(f"{e.__class__.__name__} when expanding '{template_name}' into "
               f"'{output_file}': {e}", file=sys.stderr)
         raise
