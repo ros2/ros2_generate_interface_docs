@@ -24,8 +24,30 @@ from rosidl_runtime_py import get_message_slot_types
 from rosidl_runtime_py.import_message import import_message_from_namespaced_type
 
 
-def _generate_msg_text_from_spec(package, type_, spec, indent=0):
-    namespaced_type = NamespacedType([package, 'msg'], type_)
+def _generate_msg_text_from_spec(package, interface_name, indent=0):
+    """
+    Generate a dictionary with the compact message.
+
+    Compact message contains:
+        - Constants
+        - messge fields. If the message contains other composed interfaces
+          a link will be added to this interfaces.
+
+    Parameters
+    ----------
+    package: str
+        name of the package
+    interface_name: str
+        name of the message
+    indent: int, optional
+        number of indentations to add to the generated text
+
+    Returns
+    -------
+    dictionary with the compact definition (constanst and message with links)
+
+    """
+    namespaced_type = NamespacedType([package, 'msg'], interface_name)
     imported_message = import_message_from_namespaced_type(namespaced_type)
     return utils.generate_compact_definition(imported_message,
                                              indent,
@@ -33,6 +55,21 @@ def _generate_msg_text_from_spec(package, type_, spec, indent=0):
 
 
 def generate_msg_doc(msg, msg_template, file_output_path):
+    """
+    Generate msg documentation.
+
+    This function write in a file the message static HTML site.
+
+    Parameters
+    ----------
+    msg: str
+        name of the message
+    msg_template: str
+        name of the template for messages
+    file_output_path: str
+        name of the file where the template will be written once filled
+
+    """
     package, interface, base_type = utils.resource_name(msg)
     msg_doc_dic = {'name': msg,
                    'ext': 'msg',
@@ -47,10 +84,23 @@ def generate_msg_doc(msg, msg_template, file_output_path):
 
     compact_definition = _generate_msg_text_from_spec(package, base_type, spec)
     msg_doc_dic['raw_text'] = utils.generate_raw_text(spec)
-    utils.write_template('msg.html.em', {**msg_doc_dic, **compact_definition}, file_output_path)
+    utils.write_template(msg_template, {**msg_doc_dic, **compact_definition}, file_output_path)
 
 
 def generate_msg_index(package, file_directory, msgs):
+    """
+    Generate the message index page.
+
+    Parameters
+    ----------
+    package: str
+        package anme
+    file_directory: str
+        directory where the index site will be located
+    msgs: str[]
+        list the the message associated with the package
+
+    """
     package_message_dic = {}
     package_message_dic['package'] = package
     package_message_dic['date'] = str(time.strftime('%a, %d %b %Y %H:%M:%S'))

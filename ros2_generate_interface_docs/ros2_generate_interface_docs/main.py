@@ -24,9 +24,28 @@ from ros2_generate_interface_docs import utils
 from rosidl_runtime_py import get_message_interfaces
 
 
-# generic function takes op and its argument
 def generate_interfaces(generate_index, generate_doc, interfaces,
                         html_dir, template, interface_type):
+    """
+    Generate the index and documentation for each message.
+
+    Parameters
+    ----------
+    generate_index: function
+        function to call to generate the index documentation.
+    generate_doc: function
+        function to call to generate the documentation for each interface
+    interfaces: dict of {str : str[]}
+        dictionary with the interface package name associated with all the interface
+        for this package.
+    html_dir: str
+        path to the directory to save the generated documentation
+    template: str
+        template name
+    interface_type: str
+        type of the interface: msg, action or srv
+
+    """
     for package_name, names in sorted(interfaces.items(), key=lambda item: item[0]):
         package_directory = os.path.join(html_dir, package_name)
         interface_type_directory = os.path.join(package_directory, interface_type)
@@ -41,6 +60,7 @@ def generate_interfaces(generate_index, generate_doc, interfaces,
 
 
 def main(argv=sys.argv[1:]):
+    """Parse the arguments and call the right logic."""
     parser = argparse.ArgumentParser(
         description='Generate interfaces public API documentation',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -54,14 +74,12 @@ def main(argv=sys.argv[1:]):
     html_dir = os.path.join(output_dir, 'html')
     os.makedirs(html_dir, exist_ok=True)
 
-    msg_template = utils.load_template('msg.template')
-
     # generate msg interfaces
     generate_interfaces(msg_utils.generate_msg_index,
                         msg_utils.generate_msg_doc,
                         get_message_interfaces(),
                         html_dir,
-                        msg_template,
+                        'msg.html.em',
                         'msg')
 
     utils.copy_css_style(html_dir)

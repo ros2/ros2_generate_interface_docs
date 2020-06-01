@@ -26,6 +26,21 @@ IGNORED_KEYS = ['__slots__', '__doc__', '_fields_and_field_types', 'SLOT_TYPES',
 
 
 def generate_raw_text(raw_text):
+    """
+    Generate the text HTML for the message fields.
+
+    Lines that starts with '#' (comments) will be shown in blue, otherwise black.
+
+    Parameters
+    ----------
+    raw_text: str
+        content of the interface
+    Returns
+    -------
+    raw_test_str: str
+        string with the generated HTML
+
+    """
     raw_test_str = ''
     for line in raw_text.split(os.linesep):
         line = line.replace(' ', '&nbsp;')
@@ -39,7 +54,21 @@ def generate_raw_text(raw_text):
 
 
 def resource_name(resource):
-    """Return the resource name."""
+    """
+    Return the resource name.
+
+    Parameters
+    ----------
+    resource: str
+        resource name of the interface
+
+    Returns
+    -------
+    value: tuple
+        a tuple with the 3 part of the resource name (for example: std_msgs/msg/Bool ->
+        ('std_msgs', 'msg', 'Bool'))
+
+    """
     if '/' not in resource:
         return '', '', resource
     values = resource.split('/')
@@ -49,12 +78,28 @@ def resource_name(resource):
 
 
 def get_templates_dir():
-    """Return template directory."""
+    """
+    Return template directory.
+
+    Returns
+    -------
+    template directory:  str
+        return the directory of the template directory
+
+    """
     return os.path.join(os.path.dirname(__file__), _TEMPLATES_DIR)
 
 
 def copy_css_style(folder_name):
-    """Copy the css style file in the folder_name."""
+    """
+    Copy the css style files in the folder_name.
+
+    Parameters
+    ----------
+    folder_name: str
+        name of the folder where the style css files will be copied
+
+    """
     style_css, _ = load_template('styles.css')
     with open(os.path.join(folder_name, 'styles.css'), 'w') as f:
         f.write(style_css)
@@ -71,7 +116,18 @@ def load_template(filename):
     return its content, may sys.exit on error.
     Contents are cached with filename as key.
 
-    :returns: cached file contents
+    Parameters
+    ----------
+    filename: str
+        name of the template to be loaded
+
+    Returns
+    -------
+    content: str
+        cached file contents
+    filename: str
+        filename of the template concat with the template directory
+
     """
     filename = os.path.join(get_templates_dir(), filename)
     if not os.path.isfile(filename):
@@ -85,6 +141,19 @@ def load_template(filename):
 
 
 def write_template(template_name, data, output_file):
+    """
+    Write the data in the template.
+
+    Parameters
+    ----------
+    template_name: str
+        name of the template to write
+    data:
+        data that is used to fill the template
+    output_file: str
+        path where the file will be written
+
+    """
     msg_index_template, template_path = load_template(template_name)
     output = StringIO()
     interpreter = em.Interpreter(
@@ -116,6 +185,29 @@ def write_template(template_name, data, output_file):
 
 
 def generate_compact_definition(imported_interface, indent, get_slot_types):
+    """
+    Create the compact definition dictionary.
+
+    This function remove all the common dict keys to get all the contants in the message
+    dictionary. Then it will generate a dictionary will the contants and field of the message.
+    If the message is based in other message, then this text will contain a link to this
+    interface.
+
+    Parameters
+    ----------
+    imported_interface: obj
+        class with all the data about the interface
+    indent: int
+        number of indentations to add to the generated text
+    get_slot_types: function
+        function that returns an OrderedDict of the slot types of a message.
+
+    Returns
+    -------
+    compact: dict
+        Dictionary with the compact definition (constanst and message with links)
+
+    """
     ignored_keys_ = IGNORED_KEYS
     ignored_keys_ += list(imported_interface.get_fields_and_field_types().keys())
     ignored_keys_ += ['_'+x for x in imported_interface.get_fields_and_field_types().keys()]
