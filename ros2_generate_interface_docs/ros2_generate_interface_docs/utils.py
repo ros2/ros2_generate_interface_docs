@@ -77,7 +77,7 @@ def resource_name(resource):
         return '', '', resource
     values = resource.split('/')
     if len(values) != 3:
-        raise ValueError(...)
+        raise ValueError('resource name is malformed')
     return tuple(values)
 
 
