@@ -16,6 +16,7 @@ from io import StringIO
 import os
 import sys
 import time
+
 import em
 
 from rosidl_parser.definition import AbstractNestedType, BASIC_TYPES, NamespacedType
@@ -143,7 +144,8 @@ def load_template(filename):
         return content, filename
 
 
-def generate_doc(interface, interface_template, file_output_path, doc_dic, generate_text_from_spec):
+def generate_doc(interface, interface_template, file_output_path,
+                 doc_dic, generate_text_from_spec):
     """
     Generate msg documentation.
 
@@ -159,8 +161,8 @@ def generate_doc(interface, interface_template, file_output_path, doc_dic, gener
         name of the file where the template will be written once filled
     doc_dic: dict
         dictionary with the data to field the index template
-
     generate_text_from_spec: function
+        function with the logic to fill the compact definition for a specific type of interface
 
     """
     package, interface_type, base_type = resource_name(interface)

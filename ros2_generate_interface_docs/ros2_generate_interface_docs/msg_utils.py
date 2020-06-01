@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 from ros2_generate_interface_docs import utils
 
 from rosidl_parser.definition import NamespacedType
