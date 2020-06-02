@@ -42,28 +42,30 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
         type of the interface: msg, action or srv
 
     """
-    for package_name, names in sorted(interfaces.items(), key=lambda item: item[0]):
+    for package_name, interface_names in sorted(interfaces.items(), key=lambda item: item[0]):
         package_directory = os.path.join(html_dir, package_name)
         interface_type_directory = os.path.join(package_directory, interface_type)
         os.makedirs(interface_type_directory, exist_ok=True)
         utils.generate_index(package_name,
                              package_directory,
                              interfaces[package_name])
-        for name in names:
-            doc_dic = {'name': name,
-                       'package': package_name,
-                       'base_type': name,
-                       'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
+        for interface_name in interface_names:
+            documentation_data = {'name': interface_name,
+                                  'package': package_name,
+                                  'base_type': interface_name,
+                                  'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
 
             if(interface_type == 'msg'):
-                doc_dic = {**doc_dic, **{'ext': 'msg', 'type': 'Message'}}
+                documentation_data = {**documentation_data,
+                                      **{'ext': 'msg', 'type': 'Message'}}
                 function_to_generate_text_from_spec = msg_utils.generate_msg_text_from_spec
 
-            utils.generate_doc('%s/%s' % (package_name, name),
-                               template,
-                               os.path.join(package_directory, name + '.html'),
-                               doc_dic,
-                               function_to_generate_text_from_spec)
+            utils.generate_interface_documentation('%s/%s' % (package_name, interface_name),
+                                                   template,
+                                                   os.path.join(package_directory,
+                                                                interface_name + '.html'),
+                                                   documentation_data,
+                                                   function_to_generate_text_from_spec)
 
 
 def main(argv=sys.argv[1:]):

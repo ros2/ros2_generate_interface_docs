@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from io import StringIO
 import errno
+from io import StringIO
 import os
 import sys
 import time
@@ -78,7 +78,7 @@ def resource_name(resource):
         return '', '', resource
     values = resource.split('/')
     if len(values) != 3:
-        raise ValueError('resource name is malformed')
+        raise ValueError('Resource name "{}" is malformed'.format(resource))
     return tuple(values)
 
 
@@ -145,10 +145,10 @@ def load_template(filename):
         return content, filename
 
 
-def generate_doc(interface, interface_template, file_output_path,
-                 doc_dic, generate_text_from_spec):
+def generate_interface_documentation(interface, interface_template, file_output_path,
+                                     documentation_data, generate_text_from_spec):
     """
-    Generate msg documentation.
+    Generate documentation for a single ROSIDL interface.
 
     This function write in a file the message static HTML site.
 
@@ -160,7 +160,7 @@ def generate_doc(interface, interface_template, file_output_path,
         name of the template
     file_output_path: str
         name of the file where the template will be written once filled
-    doc_dic: dict
+    documentation_data: dict
         dictionary with the data to field the index template
     generate_text_from_spec: function
         function with the logic to fill the compact definition for a specific type of interface
@@ -172,8 +172,10 @@ def generate_doc(interface, interface_template, file_output_path,
         spec = h.read().rstrip()
 
     compact_definition = generate_text_from_spec(package, base_type, spec)
-    doc_dic['raw_text'] = generate_raw_text(spec)
-    write_template(interface_template, {**doc_dic, **compact_definition}, file_output_path)
+    documentation_data['raw_text'] = generate_raw_text(spec)
+    write_template(interface_template,
+                   {**documentation_data, **compact_definition},
+                   file_output_path)
 
 
 def generate_index(package, file_directory, interfaces):
@@ -190,14 +192,14 @@ def generate_index(package, file_directory, interfaces):
         list the the interfaces associated with the package
 
     """
-    package_message_dic = {}
-    package_message_dic['package'] = package
-    package_message_dic['date'] = str(time.strftime('%a, %d %b %Y %H:%M:%S'))
+    package_index_data = {}
+    package_index_data['package'] = package
+    package_index_data['date'] = str(time.strftime('%a, %d %b %Y %H:%M:%S'))
     if interfaces:
-        package_message_dic['links'] = [package + '/' + msg + '.html' for msg in interfaces]
-        package_message_dic['interface_list'] = interfaces
+        package_index_data['links'] = [package + '/' + msg + '.html' for msg in interfaces]
+        package_index_data['interface_list'] = interfaces
     file_output_path = os.path.join(file_directory, 'index-msg.html')
-    write_template('msg-index.html.em', package_message_dic, file_output_path)
+    write_template('msg-index.html.em', package_index_data, file_output_path)
 
 
 def write_template(template_name, data, output_file):
