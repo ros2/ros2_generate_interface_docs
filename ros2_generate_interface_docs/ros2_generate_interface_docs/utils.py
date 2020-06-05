@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import errno
+import html
 from io import StringIO
 import os
 import sys
-import time
 
 import em
 
@@ -36,43 +36,31 @@ def generate_raw_text(raw_text):
 
     Lines that starts with '#' (comments) will be shown in blue, otherwise black.
 
-    Parameters
-    ----------
-    raw_text: str
-        content of the interface
-    Returns
-    -------
-    raw_test_str: str
-        string with the generated HTML
-
+    :param raw_text: content of the interface
+    :type raw_text: str
+    :returns: string with the generated HTML
+    :rtype: str
     """
-    raw_test_str = ''
-    for line in raw_text.split(os.linesep):
-        line = line.replace(' ', '&nbsp;')
+    raw_str = ''
+    for line in raw_text.splitlines():
         parts = line.split('#')
         if len(parts) > 1:
-            raw_test_str = raw_test_str + parts[0] \
-                + '<font color="blue">#%s</font><br/>' % ('#'.join(parts[1:]))
+            raw_str = raw_str + parts[0] \
+                + '<a style="color:blue">#%s</a></br>\n' % ('#'.join(parts[1:]))
         else:
-            raw_test_str = raw_test_str + '%s<br/>' % parts[0]
-    return raw_test_str
+            raw_str = raw_str + '%s<br/>\n' % parts[0]
+    return html.escape(raw_str)
 
 
 def resource_name(resource):
     """
     Return the resource name.
 
-    Parameters
-    ----------
-    resource: str
-        resource name of the interface
-
-    Returns
-    -------
-    value: tuple
-        a tuple with the 3 part of the resource name (for example: std_msgs/msg/Bool ->
+    :param resource: resource name of the interface
+    :type resource: str
+    :returns: a tuple with the 3 part of the resource name (for example: std_msgs/msg/Bool ->
         ('std_msgs', 'msg', 'Bool'))
-
+    :rtype: tuple
     """
     if '/' not in resource:
         return '', '', resource
@@ -86,11 +74,8 @@ def get_templates_dir():
     """
     Return template directory.
 
-    Returns
-    -------
-    template directory:  str
-        return the directory of the template directory
-
+    :returns: return the directory of the template directory
+    :rtype: str
     """
     return os.path.join(os.path.dirname(__file__), _TEMPLATES_DIR)
 
@@ -99,42 +84,29 @@ def copy_css_style(folder_name):
     """
     Copy the css style files in the folder_name.
 
-    Parameters
-    ----------
-    folder_name: str
-        name of the folder where the style css files will be copied
-
+    :param folder_name: name of the folder where the style css files will be copied
+    :type folder_name: str
     """
-    style_css, _ = load_template('styles.css')
-    with open(os.path.join(folder_name, 'styles.css'), 'w') as f:
-        f.write(style_css)
-
-    msg_style_css, _ = load_template('msg-styles.css')
-    with open(os.path.join(folder_name, 'msg-styles.css'), 'w') as f:
-        f.write(msg_style_css)
+    for style in ['styles.css', 'msg-styles.css']:
+        style_css, _ = load_template(style)
+        with open(os.path.join(folder_name, style), 'w') as f:
+            f.write(style_css)
 
 
-def load_template(filename):
+def load_template(input_filename):
     """
     Look up file within rosdoc ROS package.
 
     return its content, may sys.exit on error.
     Contents are cached with filename as key.
 
-    Parameters
-    ----------
-    filename: str
-        name of the template to be loaded
-
-    Returns
-    -------
-    content: str
-        cached file contents
-    filename: str
-        filename of the template concat with the template directory
-
+    :param input_filename: name of the template to be loaded
+    :type input_filename: str
+    :returns: cached file contents and filename of the template concat with
+        the template directory
+    :rtype: tuple
     """
-    filename = os.path.join(get_templates_dir(), filename)
+    filename = os.path.join(get_templates_dir(), input_filename)
     if not os.path.isfile(filename):
         raise FileNotFoundError(
             errno.ENOENT, os.strerror(errno.ENOENT), filename)
@@ -152,19 +124,18 @@ def generate_interface_documentation(interface, interface_template, file_output_
 
     This function write in a file the message static HTML site.
 
-    Parameters
-    ----------
-    interface: str
-        name of the interface
-    interface_template: str
-        name of the template
-    file_output_path: str
-        name of the file where the template will be written once filled
-    documentation_data: dict
-        dictionary with the data to field the index template
-    generate_text_from_spec: function
-        function with the logic to fill the compact definition for a specific type of interface
-
+    :param interface: name of the interface
+    :type interface: str
+    :param interface_template: name of the template
+    :type interface_template: str
+    :param file_output_path: name of the file where the template will be written
+        once filled
+    :type file_output_path: str
+    :param documentation_data: dictionary with the data to field the index template
+    :type documentation_data: dict
+    :param generate_text_from_spec: function with the logic to fill the compact
+        definition for a specific type of interface
+    :type generate_text_from_spec: function
     """
     package, interface_type, base_type = resource_name(interface)
     file_path = get_interface_path(interface)
@@ -173,48 +144,58 @@ def generate_interface_documentation(interface, interface_template, file_output_
 
     compact_definition = generate_text_from_spec(package, base_type, spec)
     documentation_data['raw_text'] = generate_raw_text(spec)
-    write_template(interface_template,
-                   {**documentation_data, **compact_definition},
-                   file_output_path)
+    content = evaluate_template(interface_template,
+                                {**documentation_data, **compact_definition})
+    write_template(content, file_output_path)
 
 
-def generate_index(package, file_directory, interfaces):
+def generate_index(package, file_directory, interfaces, timestamp):
     """
     Generate the message index page.
 
-    Parameters
-    ----------
-    package: str
-        package anme
-    file_directory: str
-        directory where the index site will be located
-    interfaces: str[]
-        list the the interfaces associated with the package
-
+    :param package: package name
+    :type package: str
+    :param file_directory: directory where the index site will be located
+    :type file_directory: str
+    :param interfaces: list the the interfaces associated with the package
+    :type interfaces: str
+    :param timestamp: time to be included in all the generated files
+    :type timestamp: time
     """
     package_index_data = {}
     package_index_data['package'] = package
-    package_index_data['date'] = str(time.strftime('%a, %d %b %Y %H:%M:%S'))
+    package_index_data['date'] = timestamp
     if interfaces:
         package_index_data['links'] = [package + '/' + msg + '.html' for msg in interfaces]
         package_index_data['interface_list'] = interfaces
     file_output_path = os.path.join(file_directory, 'index-msg.html')
-    write_template('msg-index.html.em', package_index_data, file_output_path)
+    content = evaluate_template('msg-index.html.em', package_index_data)
+    write_template(content, file_output_path)
 
 
-def write_template(template_name, data, output_file):
+def write_template(content, output_file):
     """
     Write the data in the template.
 
-    Parameters
-    ----------
-    template_name: str
-        name of the template to write
-    data:
-        data that is used to fill the template
-    output_file: str
-        path where the file will be written
+    :param content: data to write in the file
+    :type content: str
+    :param output_file: path where the file will be written
+    :type output_file: str
+    """
+    with open(os.path.join(output_file), 'w') as f:
+        f.write(content)
 
+
+def evaluate_template(template_name, data):
+    """
+    Write the data in the template.
+
+    :param template_dir: name of the template to write
+    :type template_dir: str
+    :param data: data that is used to fill the template
+    :type template_dir: dict
+    :returns: string with the template evaluated
+    :rtype: str
     """
     msg_index_template, template_path = load_template(template_name)
     output = StringIO()
@@ -233,15 +214,14 @@ def write_template(template_name, data, output_file):
         interpreter.string(template_content, template_path, locals=data)
         interpreter.invoke('afterFile')
     except Exception as e:  # noqa: F841
-        print(f"{e.__class__.__name__} when expanding '{template_name}' into "
-              f"'{output_file}': {e}", file=sys.stderr)
+        print(f"{e.__class__.__name__} when expanding '{template_name}' "
+              f": '{e}'", file=sys.stderr)
         raise
 
     content = output.getvalue()
     interpreter.shutdown()
 
-    with open(os.path.join(output_file), 'w') as f:
-        f.write(content)
+    return content
 
 
 def generate_compact_definition(imported_interface, indent, get_slot_types):
@@ -253,20 +233,14 @@ def generate_compact_definition(imported_interface, indent, get_slot_types):
     If the message is based in other message, then this text will contain a link to this
     interface.
 
-    Parameters
-    ----------
-    imported_interface: obj
-        class with all the data about the interface
-    indent: int
-        number of indentations to add to the generated text
-    get_slot_types: function
-        function that returns an OrderedDict of the slot types of a message.
-
-    Returns
-    -------
-    compact: dict
-        Dictionary with the compact definition (constanst and message with links)
-
+    :param imported_interface: class with all the data about the interface
+    :type imported_interface:
+    :param indent: number of indentations to add to the generated text
+    :type indent: int
+    :param get_slot_types: function that returns an OrderedDict of the slot types of a message.
+    :type get_slot_types: function
+    :returns: Dictionary with the compact definition (constanst and message with links)
+    :rtype: dict
     """
     ignored_keys_ = IGNORED_KEYS
     ignored_keys_ += list(imported_interface.get_fields_and_field_types().keys())
@@ -283,8 +257,10 @@ def generate_compact_definition(imported_interface, indent, get_slot_types):
 
     fields = imported_interface.get_fields_and_field_types()
     for field, field_types in fields.items():
-        if(field_types not in BASIC_TYPES and
-           'string' not in field_types):
+        if(
+            field_types not in BASIC_TYPES and
+           'string' not in field_types
+           ):
             slot_type = get_slot_types(imported_interface)[field]
             if(isinstance(slot_type, AbstractNestedType)):
                 if(isinstance(slot_type.value_type, NamespacedType)):

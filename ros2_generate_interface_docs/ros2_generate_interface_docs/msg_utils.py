@@ -29,19 +29,14 @@ def generate_msg_text_from_spec(package, interface_name, indent=0):
         - messge fields. If the message contains other composed interfaces
           a link will be added to this interfaces.
 
-    Parameters
-    ----------
-    package: str
-        name of the package
-    interface_name: str
-        name of the message
-    indent: int, optional
-        number of indentations to add to the generated text
-
-    Returns
-    -------
-    dictionary with the compact definition (constanst and message with links)
-
+    :param package: name of the package
+    :type package: str:
+    :param interface_name: name of the message
+    :type interface_name: str
+    :param indent: number of indentations to add to the generated text (default = 0)
+    :type indent: int, optional
+    :returns: dictionary with the compact definition (constanst and message with links)
+    :rtype: dict
     """
     namespaced_type = NamespacedType([package, 'msg'], interface_name)
     imported_message = import_message_from_namespaced_type(namespaced_type)

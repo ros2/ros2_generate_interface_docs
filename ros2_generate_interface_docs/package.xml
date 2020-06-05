@@ -8,8 +8,7 @@
   </description>
   <maintainer email="ahcorde@osrfoundation.org">Alejandro Hernández</maintainer>
   <license>Apache License 2.0</license>
-  
-  <exec_depend>python3-argparse</exec_depend>
+
   <exec_depend>python3-empy</exec_depend>
   <exec_depend>rosidl_parser</exec_depend>
   <exec_depend>rosidl_runtime_py</exec_depend>

@@ -29,43 +29,42 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
     """
     Generate the index and documentation for each message.
 
-    Parameters
-    ----------
-    interfaces: dict of {str : str[]}
-        dictionary with the interface package name associated with all the interface
-        for this package.
-    html_dir: str
-        path to the directory to save the generated documentation
-    template: str
-        template name
-    interface_type: str
-        type of the interface: msg, action or srv
-
+    :param interfaces: dictionary with the interface package name associated with all
+        the interface for this package.
+    :type interfaces: dict of {str : str[]}
+    :param html_dir: path to the directory to save the generated documentation
+    :type html_dir: str
+    :param template_dir: template name
+    :type template_dir: str
+    :param interface_type: type of the interface: msg, action or srv
+    :type interface_type: str
     """
-    for package_name, interface_names in sorted(interfaces.items(), key=lambda item: item[0]):
+    timestamp = str(time.strftime('%a, %d %b %Y %H:%M:%S'))
+    for package_name, interface_names in interfaces.items():
         package_directory = os.path.join(html_dir, package_name)
         interface_type_directory = os.path.join(package_directory, interface_type)
         os.makedirs(interface_type_directory, exist_ok=True)
-        utils.generate_index(package_name,
-                             package_directory,
-                             interfaces[package_name])
+        utils.generate_index(
+            package_name,
+            package_directory,
+            interfaces[package_name],
+            timestamp)
         for interface_name in interface_names:
-            documentation_data = {'name': interface_name,
-                                  'package': package_name,
-                                  'base_type': interface_name,
-                                  'date': str(time.strftime('%a, %d %b %Y %H:%M:%S'))}
+            documentation_data = {'interface_name': interface_name,
+                                  'interface_package': package_name,
+                                  'date': timestamp}
 
             if(interface_type == 'msg'):
                 documentation_data = {**documentation_data,
                                       **{'ext': 'msg', 'type': 'Message'}}
                 function_to_generate_text_from_spec = msg_utils.generate_msg_text_from_spec
 
-            utils.generate_interface_documentation('%s/%s' % (package_name, interface_name),
-                                                   template,
-                                                   os.path.join(package_directory,
-                                                                interface_name + '.html'),
-                                                   documentation_data,
-                                                   function_to_generate_text_from_spec)
+            utils.generate_interface_documentation(
+                '%s/%s' % (package_name, interface_name),
+                template,
+                os.path.join(package_directory, interface_name + '.html'),
+                documentation_data,
+                function_to_generate_text_from_spec)
 
 
 def main(argv=sys.argv[1:]):
@@ -78,9 +77,7 @@ def main(argv=sys.argv[1:]):
         help='Output directory')
     args = parser.parse_args(argv)
 
-    output_dir = args.outputdir
-    os.makedirs(output_dir, exist_ok=True)
-    html_dir = os.path.join(output_dir, 'html')
+    html_dir = os.path.join(args.outputdir, 'html')
     os.makedirs(html_dir, exist_ok=True)
 
     # generate msg interfaces
