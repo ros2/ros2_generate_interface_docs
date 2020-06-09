@@ -17,6 +17,7 @@ import errno
 import html
 from io import StringIO
 import os
+import shutil
 import sys
 
 import em
@@ -89,9 +90,7 @@ def copy_css_style(folder_name):
     :type folder_name: str
     """
     for style in ['styles.css', 'msg-styles.css']:
-        style_css, _ = load_template(style)
-        with open(os.path.join(folder_name, style), 'w') as f:
-            f.write(style_css)
+        shutil.copy(os.path.join(get_templates_dir(), style), os.path.join(folder_name, style))
 
 
 def load_template(input_filename):
