@@ -165,7 +165,7 @@ def generate_index(package, file_directory, interfaces, timestamp):
     """
     package_index_data = {}
     package_index_data['package'] = package
-    package_index_data['date'] = timestamp
+    package_index_data['timestamp'] = timestamp
     if interfaces:
         package_index_data['links'] = [package + '/' + msg + '.html' for msg in interfaces]
         package_index_data['interface_list'] = interfaces

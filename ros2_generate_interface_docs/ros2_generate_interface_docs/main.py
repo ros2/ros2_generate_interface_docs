@@ -39,7 +39,7 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
     :param interface_type: type of the interface: msg, action or srv
     :type interface_type: str
     """
-    timestamp = str(time.strftime('%a, %d %b %Y %H:%M:%S'))
+    timestamp = time.gmtime()
     for package_name, interface_names in interfaces.items():
         package_directory = os.path.join(html_dir, package_name)
         interface_type_directory = os.path.join(package_directory, interface_type)
@@ -52,7 +52,7 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
         for interface_name in interface_names:
             documentation_data = {'interface_name': interface_name,
                                   'interface_package': package_name,
-                                  'date': timestamp}
+                                  'timestamp': timestamp}
 
             if(interface_type == 'msg'):
                 documentation_data = {**documentation_data,
