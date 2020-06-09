@@ -21,11 +21,11 @@ import time
         @[for constant_type, constant_name in zip(constant_names, constant_types)]@
           @(constant_name)=@(constant_type) </br>
         @[end for]@
-        @[for link, interface_type, interface_name in zip(links, field_types, field_names)]@
+        @[for link, interface_type, interface_name, default_value in zip(links, field_types, field_names, field_default_values)]@
         @[if link != '']
-        <a href="../../@(link)"> @(interface_type)</a> @(interface_name)</br>
+        <a href="../../@(link)"> @(interface_type)</a> @(interface_name)@(default_value)</br>
         @[else]
-        @(interface_type)</a> @(interface_name)</br>
+        @(interface_type)</a> @(interface_name)@(default_value)</br>
         @[end if]@
         @[end for]@
       </div>

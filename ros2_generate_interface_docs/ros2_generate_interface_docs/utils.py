@@ -249,7 +249,7 @@ BASIC_TYPE_CONVERSION = {
 }
 
 
-def fill_namespaced_type(compact, field, field_type, size_sequence_str, default_str, value_type):
+def fill_namespaced_type(compact, field, field_type, size_sequence_str, value_type):
     """
     Fill compact structure with a namespaced type.
 
@@ -274,11 +274,11 @@ def fill_namespaced_type(compact, field, field_type, size_sequence_str, default_
     else:
         compact['field_types'].append(
             '/'.join(value_type.namespaced_name()) + size_sequence_str)
-    compact['field_names'].append(field + default_str)
+    compact['field_names'].append(field)
     return compact
 
 
-def fill_basic_type(compact, field, field_type, size_sequence_str, default_str):
+def fill_basic_type(compact, field, field_type, size_sequence_str):
     """
     Fill compact structure with a basic type.
 
@@ -304,7 +304,7 @@ def fill_basic_type(compact, field, field_type, size_sequence_str, default_str):
             compact['field_types'].append(field_type + size_sequence_str)
 
     compact['links'].append('')
-    compact['field_names'].append(field + default_str)
+    compact['field_names'].append(field)
     return compact
 
 
@@ -325,7 +325,8 @@ def handle_constants_and_default_values(imported_interface):
                'constant_names': [],
                'links': [],
                'field_types': [],
-               'field_names': []}
+               'field_names': [],
+               'field_default_values': []}
     fields_with_default_value = []
     for key in imported_interface.__dict__.keys():
         if key not in ignored_keys_ and '__DEFAULT' not in key:
@@ -352,15 +353,12 @@ def get_default_value(imported_interface, field, fields_with_default_value):
     default_str = ''
     if field in fields_with_default_value:
         default_value = imported_interface.__dict__[field.upper() + '__DEFAULT']
-        default_str = '=' + str(default_value)
-        if isinstance(default_value, array.array):
-            default_str = '=' + str(default_value.tolist())
-        else:
-            default_str = '=' + str(default_value)
+        value = default_value.tolist() if isinstance(default_value, array.array) else default_value
+        default_str = '={}'.format(value)
     return default_str
 
 
-def get_type_and_size_from_sequence(compact, field, field_type, default_value_str, slot_type):
+def get_type_and_size_from_sequence(compact, field, field_type, slot_type):
     """
     Get the type and size from a sequence.
 
@@ -370,8 +368,6 @@ def get_type_and_size_from_sequence(compact, field, field_type, default_value_st
     :type field: str
     :param field_type: type of the field in the interface
     :type field_type: str
-    :param default_value_str: default value
-    :type default_value_str: str
     :param slot_type: type of sequence
     :type slot_type: rosidl_parser.definition(UnboundedSequence, BoundedString, BoundedSequence)
     :returns: dictionary with the compact definition (constanst and message with links),
@@ -380,7 +376,6 @@ def get_type_and_size_from_sequence(compact, field, field_type, default_value_st
     """
     field_type_compact = field_type
     type_sequence = field_type.split('<')[1][:-1]
-    compact['field_names'].append(field + default_value_str)
     type_sequence_with_size = type_sequence.split(',')
     size_sequence_str = '[]'
     if 'string<' not in field_type:
@@ -419,6 +414,7 @@ def generate_compact_definition(imported_interface, indent, get_slot_types):
     for field, field_type in fields.items():
         # check if there are some default values
         default_value_str = get_default_value(imported_interface, field, fields_with_default_value)
+        compact['field_default_values'].append(default_value_str)
 
         slot_type = get_slot_types(imported_interface)[field]
 
@@ -426,26 +422,26 @@ def generate_compact_definition(imported_interface, indent, get_slot_types):
         field_type_compact = field_type
         if 'sequence' in field_type or 'string<' in field_type:
             compact, field_type_compact, size_sequence_str = get_type_and_size_from_sequence(
-                compact, field, field_type, default_value_str, slot_type)
+                compact, field, field_type, slot_type)
 
         if(isinstance(slot_type, AbstractNestedType)):
             if(isinstance(slot_type.value_type, NamespacedType)):
                 compact = fill_namespaced_type(
                     compact, field, field_type_compact,
-                    size_sequence_str, default_value_str, slot_type.value_type)
+                    size_sequence_str, slot_type.value_type)
             else:
                 compact = fill_basic_type(
                     compact, field, field_type_compact,
-                    size_sequence_str, default_value_str)
+                    size_sequence_str)
         else:
             field_type_tokens = field_type_compact.split('/')
             if len(field_type_tokens) > 1:
                 compact = fill_namespaced_type(
                     compact, field, field_type_compact,
-                    size_sequence_str, default_value_str, slot_type)
+                    size_sequence_str, slot_type)
             else:
                 compact = fill_basic_type(
                     compact, field, field_type_compact,
-                    size_sequence_str, default_value_str)
+                    size_sequence_str)
 
     return compact
