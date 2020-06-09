@@ -75,7 +75,7 @@ def get_templates_dir():
     """
     Return template directory.
 
-    :returns: return the directory of the template directory
+    :returns: the directory of the template directory
     :rtype: str
     """
     return os.path.join(os.path.dirname(__file__), _TEMPLATES_DIR)
@@ -399,9 +399,9 @@ def generate_compact_definition(imported_interface, indent, get_slot_types):
     """
     Create the compact definition dictionary.
 
-    This function remove all the common dict keys to get all the contants in the message
-    dictionary. Then it will generate a dictionary will the contants and field of the message.
-    If the message is based in other message, then this text will contain a link to this
+    This function removes all the common dictionary keys to get all the constants in the message
+    dictionary. Then it will generate a dictionary with the constants and field of the message.
+    If the field type is a message interface itself, then this text will contain a link to this
     interface.
 
     :param imported_interface: class with all the data about the interface

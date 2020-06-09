@@ -30,7 +30,7 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
     Generate the index and documentation for each message.
 
     :param interfaces: dictionary with the interface package name associated with all
-        the interface for this package.
+        the interfaces for this package.
     :type interfaces: dict of {str : str[]}
     :param html_dir: path to the directory to save the generated documentation
     :type html_dir: str
