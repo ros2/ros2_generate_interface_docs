@@ -3,12 +3,12 @@ import time
 }@
 <html>
   <head>
-    <title>@(package) Action/Msg/Srv Documentation</title>
+    <title>@(package) Message / Service / Action Documentation</title>
     <link type="text/css" rel="stylesheet" href="../msg-styles.css" />
   </head>
   <body>
     <div id="container">
-      <h1>@(package) Action/Msg/Srv Documentation</h1>
+      <h1>@(package) Message / Service / Action Documentation</h1>
         @[for links, msg in zip(links, interface_list)]@
         <li><a href="../../html/@(links)">@(msg)</a></li>
         @[end for]@
