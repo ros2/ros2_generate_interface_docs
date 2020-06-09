@@ -28,8 +28,34 @@ from rosidl_runtime_py import get_interface_path
 
 
 _TEMPLATES_DIR = 'templates'
-IGNORED_KEYS = ['__slots__', '__doc__', '_fields_and_field_types', 'SLOT_TYPES', '__init__',
-                '__repr__', '__eq__', '__hash__', 'get_fields_and_field_types', '__module__']
+IGNORED_KEYS = [
+    '__slots__', '__doc__', '_fields_and_field_types', 'SLOT_TYPES', '__init__',
+    '__repr__', '__eq__', '__hash__', 'get_fields_and_field_types', '__module__'
+]
+
+BASIC_TYPE_CONVERSION = {
+    'boolean': 'bool',
+    'octet': 'bytes',
+    'uint8': 'uint8',
+    'int8': 'int8',
+    'uint16': 'uint16',
+    'int16': 'int16',
+    'uint32': 'uint32',
+    'int32': 'int32',
+    'uint64': 'uint64',
+    'int64': 'int64',
+    'char': 'str',
+    'float': 'float32',
+    'double': 'float64',
+    'short': 'int',
+    'unsigned short': 'int',
+    'long': 'int',
+    'unsigned long': 'int',
+    'long long': 'int',
+    'unsigned long long': 'int',
+    'string': 'string',
+    'wstring': 'wstring'
+}
 
 
 def generate_raw_text(raw_text):
@@ -144,8 +170,9 @@ def generate_interface_documentation(interface, interface_template, file_output_
 
     compact_definition = generate_text_from_spec(package, base_type, spec)
     documentation_data['raw_text'] = generate_raw_text(spec)
-    content = evaluate_template(interface_template,
-                                {**documentation_data, **compact_definition})
+    content = evaluate_template(
+        interface_template,
+        {**documentation_data, **compact_definition})
     write_template(content, file_output_path)
 
 
@@ -224,31 +251,6 @@ def evaluate_template(template_name, data):
     return content
 
 
-BASIC_TYPE_CONVERSION = {
-    'boolean': 'bool',
-    'octet': 'bytes',
-    'uint8': 'uint8',
-    'int8': 'int8',
-    'uint16': 'uint16',
-    'int16': 'int16',
-    'uint32': 'uint32',
-    'int32': 'int32',
-    'uint64': 'uint64',
-    'int64': 'int64',
-    'char': 'str',
-    'float': 'float32',
-    'double': 'float64',
-    'short': 'int',
-    'unsigned short': 'int',
-    'long': 'int',
-    'unsigned long': 'int',
-    'long long': 'int',
-    'unsigned long long': 'int',
-    'string': 'string',
-    'wstring': 'wstring'
-}
-
-
 def fill_namespaced_type(compact, field, field_type, size_sequence_str, value_type):
     """
     Fill compact structure with a namespaced type.
@@ -321,12 +323,14 @@ def handle_constants_and_default_values(imported_interface):
     ignored_keys_ = IGNORED_KEYS
     ignored_keys_ += list(imported_interface.get_fields_and_field_types().keys())
     ignored_keys_ += ['_'+x for x in imported_interface.get_fields_and_field_types().keys()]
-    compact = {'constant_types': [],
-               'constant_names': [],
-               'links': [],
-               'field_types': [],
-               'field_names': [],
-               'field_default_values': []}
+    compact = {
+        'constant_types': [],
+        'constant_names': [],
+        'links': [],
+        'field_types': [],
+        'field_names': [],
+        'field_default_values': []
+    }
     fields_with_default_value = []
     for key in imported_interface.__dict__.keys():
         if key not in ignored_keys_ and '__DEFAULT' not in key:

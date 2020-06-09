@@ -44,19 +44,19 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
         package_directory = os.path.join(html_dir, package_name)
         interface_type_directory = os.path.join(package_directory, interface_type)
         os.makedirs(interface_type_directory, exist_ok=True)
-        utils.generate_index(
-            package_name,
-            package_directory,
-            interfaces[package_name],
-            timestamp)
+        utils.generate_index(package_name, package_directory, interfaces[package_name], timestamp)
         for interface_name in interface_names:
-            documentation_data = {'interface_name': interface_name,
-                                  'interface_package': package_name,
-                                  'timestamp': timestamp}
+            documentation_data = {
+                'interface_name': interface_name,
+                'interface_package': package_name,
+                'timestamp': timestamp
+            }
 
             if(interface_type == 'msg'):
-                documentation_data = {**documentation_data,
-                                      **{'ext': 'msg', 'type': 'Message'}}
+                documentation_data = {
+                    **documentation_data,
+                    **{'ext': 'msg', 'type': 'Message'}
+                }
                 function_to_generate_text_from_spec = msg_utils.generate_msg_text_from_spec
 
             utils.generate_interface_documentation(
@@ -81,10 +81,7 @@ def main(argv=sys.argv[1:]):
     os.makedirs(html_dir, exist_ok=True)
 
     # generate msg interfaces
-    generate_interfaces(get_message_interfaces(),
-                        html_dir,
-                        'msg.html.em',
-                        'msg')
+    generate_interfaces(get_message_interfaces(), html_dir, 'msg.html.em', 'msg')
 
     utils.copy_css_style(html_dir)
 

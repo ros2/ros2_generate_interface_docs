@@ -40,6 +40,5 @@ def generate_msg_text_from_spec(package, interface_name, indent=0):
     """
     namespaced_type = NamespacedType([package, 'msg'], interface_name)
     imported_message = import_message_from_namespaced_type(namespaced_type)
-    return utils.generate_compact_definition(imported_message,
-                                             indent,
-                                             get_message_slot_types)
+    return utils.generate_compact_definition(
+        imported_message, indent, get_message_slot_types)
