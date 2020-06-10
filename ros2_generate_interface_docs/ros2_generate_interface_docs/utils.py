@@ -14,7 +14,6 @@
 
 import array
 import errno
-import html
 from io import StringIO
 import os
 import shutil
@@ -56,28 +55,6 @@ BASIC_TYPE_CONVERSION = {
     'string': 'string',
     'wstring': 'wstring'
 }
-
-
-def generate_raw_text(raw_text):
-    """
-    Generate the text HTML for the message fields.
-
-    Lines that starts with '#' (comments) will be shown in blue, otherwise black.
-
-    :param raw_text: content of the interface
-    :type raw_text: str
-    :returns: string with the generated HTML
-    :rtype: str
-    """
-    raw_str = ''
-    for line in raw_text.splitlines():
-        parts = line.split('#')
-        if len(parts) > 1:
-            raw_str = raw_str + parts[0] \
-                + '<a style="color:blue">#%s</a></br>\n' % ('#'.join(parts[1:]))
-        else:
-            raw_str = raw_str + '%s<br/>\n' % parts[0]
-    return html.escape(raw_str)
 
 
 def resource_name(resource):
@@ -169,7 +146,7 @@ def generate_interface_documentation(interface, interface_template, file_output_
         spec = h.read().rstrip()
 
     compact_definition = generate_text_from_spec(package, base_type, spec)
-    documentation_data['raw_text'] = generate_raw_text(spec)
+    documentation_data['raw_text'] = spec
     content = evaluate_template(
         interface_template,
         {**documentation_data, **compact_definition})

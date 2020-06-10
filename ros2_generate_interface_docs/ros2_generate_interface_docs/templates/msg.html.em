@@ -1,5 +1,4 @@
 @{
-import html
 import time
 }@
 <html>
@@ -14,7 +13,13 @@ import time
       <h2>File: <span class="filename">@(interface_package)/@(interface_name).@(ext)</filename></h2>
       <h2>Raw Message Definition</h2>
       <div class="raw-msg">
-        @(html.unescape(raw_text))
+      @[for line in raw_text.splitlines()]@
+        @[if len(line.split('#')) > 1]
+          @(line.split('#')[0] + '<a style="color:blue">#%s</a></br>\n' % ('#'.join(line.split('#')[1:])))
+        @[else]
+          @(line.split('#')[0])</br>
+        @[end if]@
+      @[end for]@
       </div>
       <h2>Compact Message Definition</h2>
       <div class="compact_definition-msg">
