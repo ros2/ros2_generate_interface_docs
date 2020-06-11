@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import array
 import errno
 from io import StringIO
 import os
@@ -21,40 +20,14 @@ import sys
 
 import em
 
-from rosidl_parser.definition import AbstractNestedType, BoundedSequence, NamespacedType
+from rosidl_parser.definition import (
+    AbstractGenericString, AbstractString, Array, BasicType, BoundedSequence,
+    BoundedString, NamespacedType, UnboundedSequence
+)
 
 from rosidl_runtime_py import get_interface_path
 
-
 _TEMPLATES_DIR = 'templates'
-IGNORED_KEYS = [
-    '__slots__', '__doc__', '_fields_and_field_types', 'SLOT_TYPES', '__init__',
-    '__repr__', '__eq__', '__hash__', 'get_fields_and_field_types', '__module__'
-]
-
-BASIC_TYPE_CONVERSION = {
-    'boolean': 'bool',
-    'octet': 'bytes',
-    'uint8': 'uint8',
-    'int8': 'int8',
-    'uint16': 'uint16',
-    'int16': 'int16',
-    'uint32': 'uint32',
-    'int32': 'int32',
-    'uint64': 'uint64',
-    'int64': 'int64',
-    'char': 'str',
-    'float': 'float32',
-    'double': 'float64',
-    'short': 'int',
-    'unsigned short': 'int',
-    'long': 'int',
-    'unsigned long': 'int',
-    'long long': 'int',
-    'unsigned long long': 'int',
-    'string': 'string',
-    'wstring': 'wstring'
-}
 
 
 def resource_name(resource):
@@ -228,149 +201,64 @@ def evaluate_template(template_name, data):
     return content
 
 
-def fill_namespaced_type(compact, field, field_type, size_sequence_str, value_type):
+def get_field_type_and_link(field):
     """
-    Fill compact structure with a namespaced type.
+    Get the field type and link from a rosidl_parser.definition.Member.
 
-    :param compact: dictionary with the compact definition (constanst and message with links)
+    :param interface_field: field to get the field and the link if it's a NamespacedType
+    :type interface_field: rosidl_parser.definition.Member
+    :returns: a string with field type and the relative link to the NamespacedType
+    :rtype: str, str
+    """
+    link = ''
+    if(isinstance(field.type.value_type, AbstractGenericString)):
+        type_field = 'string'
+    elif(isinstance(field.type.value_type, NamespacedType)):
+        type_field = '/'.join(field.type.value_type.namespaced_name())
+        link = type_field + '.html'
+    else:
+        type_field = field.type.value_type.typename
+    return type_field, link
+
+
+def read_constants(imported_interface, compact):
+    """
+    Set constant in the compact structure.
+
+    :param imported_interface: interface to read all the constants
+    :type interface_field: rosidl_parser.definition.Message
+    :param compact: dictionary with the compact definition
+        (constanst and message with links)
     :type compact: dict
-    :param field: name of the field in the interface
-    :type field: str
-    :param field_type: type of the field in the interface
-    :type field_type: str
-    :param size_sequence_str: string with the size of the field. (for example, '', [2], [], [<=3])
-    :type size_sequence_str: str
-    :param value_type: define the type of the field inside Python
-    :type value_type: rosidl_parser.definition.NamespacedType
     :returns: dictionary with the compact definition (constanst and message with links)
     :rtype: dict
     """
-    pkg_name, in_type, msg_name = map(str,
-                                      value_type.namespaced_name())
-    compact['links'].append(pkg_name + '/msg/' + msg_name + '.html')
-    if '[' in field_type:
-        compact['field_types'].append(field_type + size_sequence_str)
-    else:
-        compact['field_types'].append(
-            '/'.join(value_type.namespaced_name()) + size_sequence_str)
-    compact['field_names'].append(field)
+    constants = imported_interface.constants
+    for constant in constants:
+        compact['constant_names'].append(constant.name + '=' + str(constant.value))
+        if(isinstance(constant.type, BasicType)):
+            compact['constant_types'].append(constant.type.typename)
+        elif(isinstance(constant.type, AbstractGenericString)):
+            compact['constant_types'].append('string')
     return compact
 
 
-def fill_basic_type(compact, field, field_type, size_sequence_str):
+def read_default(field):
     """
-    Fill compact structure with a basic type.
+    Read the default value otherwise return an empty string.
 
-    :param compact: dictionary with the compact definition (constanst and message with links)
-    :type compact: dict
-    :param field: name of the field in the interface
-    :type field: str
-    :param field_type: type of the field in the interface
-    :type field_type: str
-    :param size_sequence_str: string with the size of the field. (for example, '', [2], [], [<=3])
-    :type size_sequence_str: str
+    :param field: field to get the default value if exists
+    :type field: rosidl_parser.definition.Member
     :returns: dictionary with the compact definition (constanst and message with links)
     :rtype: dict
     """
-    if 'string<' not in field_type and '[' not in field_type:
-        compact['field_types'].append(
-            BASIC_TYPE_CONVERSION[field_type] + size_sequence_str)
+    if(field.has_annotations('default')):
+        return '=' + str(field.get_annotation_values('default')[0]['value'])
     else:
-        if 'string<' in field_type:
-            compact['field_types'].append(
-                field_type.split('<')[0] + '<=' + field_type.split('<')[1][:-1])
-        else:
-            compact['field_types'].append(field_type + size_sequence_str)
-
-    compact['links'].append('')
-    compact['field_names'].append(field)
-    return compact
+        return ''
 
 
-def handle_constants_and_default_values(imported_interface):
-    """
-    Fill the compact structure with constant and return default values.
-
-    :param imported_interface: class with all the data about the interface
-    :type imported_interface: interface class
-    :returns: dictionary with the compact definition (constanst and message with links) and a list
-        with the default value names
-    :rtype: dict, list
-    """
-    ignored_keys_ = IGNORED_KEYS
-    ignored_keys_ += list(imported_interface.get_fields_and_field_types().keys())
-    ignored_keys_ += ['_'+x for x in imported_interface.get_fields_and_field_types().keys()]
-    compact = {
-        'constant_types': [],
-        'constant_names': [],
-        'links': [],
-        'field_types': [],
-        'field_names': [],
-        'field_default_values': []
-    }
-    fields_with_default_value = []
-    for key in imported_interface.__dict__.keys():
-        if key not in ignored_keys_ and '__DEFAULT' not in key:
-            compact['constant_types'].append(key)
-            compact['constant_names'].append(getattr(imported_interface, key))
-        if '__DEFAULT' in key:
-            fields_with_default_value.append(key.replace('__DEFAULT', '').lower())
-    return compact, fields_with_default_value
-
-
-def get_default_value(imported_interface, field, fields_with_default_value):
-    """
-    Get the default value from a field if exists otherwise return an empty string.
-
-    :param imported_interface: class with all the data about the interface
-    :type imported_interface: interface class
-    :param field: name of the field in the interface
-    :type field: str
-    :param fields_with_default_value:list with the default value names
-    :type fields_with_default_value: list
-    :returns: default value from a field if exists otherwise return an empty string
-    :rtype: str
-    """
-    default_str = ''
-    if field in fields_with_default_value:
-        default_value = imported_interface.__dict__[field.upper() + '__DEFAULT']
-        value = default_value.tolist() if isinstance(default_value, array.array) else default_value
-        default_str = '={}'.format(value)
-    return default_str
-
-
-def get_type_and_size_from_sequence(compact, field, field_type, slot_type):
-    """
-    Get the type and size from a sequence.
-
-    :param compact: dictionary with the compact definition (constanst and message with links)
-    :type compact: dict
-    :param field: name of the field in the interface
-    :type field: str
-    :param field_type: type of the field in the interface
-    :type field_type: str
-    :param slot_type: type of sequence
-    :type slot_type: rosidl_parser.definition(UnboundedSequence, BoundedString, BoundedSequence)
-    :returns: dictionary with the compact definition (constanst and message with links),
-        string with the type of the secuence and a string with the size of the sequence
-    :rtype: dict, str, str
-    """
-    field_type_compact = field_type
-    type_sequence = field_type.split('<')[1][:-1]
-    type_sequence_with_size = type_sequence.split(',')
-    size_sequence_str = '[]'
-    if 'string<' not in field_type:
-        field_type_compact = type_sequence
-    if len(type_sequence_with_size) > 1:
-        if isinstance(slot_type, BoundedSequence):
-            size_sequence_str = '[<=' + type_sequence_with_size[1] + ']'
-        else:
-            size_sequence_str = '[' + type_sequence_with_size[1] + ']'
-        field_type_compact = type_sequence_with_size[0]
-    return compact, field_type_compact, size_sequence_str
-
-
-def generate_compact_definition(imported_interface, indent, get_slot_types):
+def generate_compact_definition(imported_interface, indent):
     """
     Create the compact definition dictionary.
 
@@ -383,46 +271,64 @@ def generate_compact_definition(imported_interface, indent, get_slot_types):
     :type imported_interface:
     :param indent: number of indentations to add to the generated text
     :type indent: int
-    :param get_slot_types: function that returns an OrderedDict of the slot types of a message.
-    :type get_slot_types: function
     :returns: dictionary with the compact definition (constanst and message with links)
     :rtype: dict
     """
-    compact, fields_with_default_value = handle_constants_and_default_values(imported_interface)
+    compact = {
+        'constant_types': [],
+        'constant_names': [],
+        'links': [],
+        'field_types': [],
+        'field_names': [],
+        'field_default_values': []
+    }
 
-    fields = imported_interface.get_fields_and_field_types()
+    compact = read_constants(imported_interface, compact)
 
-    for field, field_type in fields.items():
-        # check if there are some default values
-        default_value_str = get_default_value(imported_interface, field, fields_with_default_value)
-        compact['field_default_values'].append(default_value_str)
+    for field in imported_interface.structure.members:
 
-        slot_type = get_slot_types(imported_interface)[field]
+        compact['field_default_values'].append(read_default(field))
 
-        size_sequence_str = ''
-        field_type_compact = field_type
-        if 'sequence' in field_type or 'string<' in field_type:
-            compact, field_type_compact, size_sequence_str = get_type_and_size_from_sequence(
-                compact, field, field_type, slot_type)
-
-        if(isinstance(slot_type, AbstractNestedType)):
-            if(isinstance(slot_type.value_type, NamespacedType)):
-                compact = fill_namespaced_type(
-                    compact, field, field_type_compact,
-                    size_sequence_str, slot_type.value_type)
+        type_field = ''
+        array_definition_str = ''
+        link = ''
+        if(isinstance(field.type, BasicType)):
+            type_field = field.type.typename
+        elif(isinstance(field.type, Array)):
+            type_field, link = get_field_type_and_link(field)
+            if(field.type.has_maximum_size()):
+                array_definition_str = '[' + str(field.type.size) + ']'
             else:
-                compact = fill_basic_type(
-                    compact, field, field_type_compact,
-                    size_sequence_str)
+                array_definition_str = '[]'
+        elif(isinstance(field.type, AbstractGenericString)):
+            type_field = 'string'
+            if(isinstance(field.type, BoundedString)):
+                type_field = 'string[<=' + str(field.type.maximum_size) + ']'
+        elif(isinstance(field.type, NamespacedType)):
+            type_field = '/'.join(field.type.namespaced_name())
+            link = type_field + '.html'
+        elif(isinstance(field.type, UnboundedSequence)):
+            array_definition_str = '[]'
+            type_field, link = get_field_type_and_link(field)
+        elif(isinstance(field.type, BoundedSequence)):
+            array_definition_str = '[<=' + str(field.type.maximum_size) + ']'
+            type_field, link = get_field_type_and_link(field)
+        elif(isinstance(field.type.value_type, Array)):
+            if(field.type.value_type.has_maximum_size()):
+                array_definition_str = '[]'
+            else:
+                array_definition_str = '[' + field.type.value_type.maximum_size + ']'
+        elif(isinstance(field.type.value_type, AbstractString)):
+            type_field = 'string'
+            if(isinstance(field.type, BoundedString)):
+                type_field = 'string[<=' + str(field.type.maximum_size) + ']'
+        elif(isinstance(field.type.value_type, NamespacedType)):
+            type_field = '/'.join(field.type.value_type.namespaced_name())
+            link = type_field + '.html'
         else:
-            field_type_tokens = field_type_compact.split('/')
-            if len(field_type_tokens) > 1:
-                compact = fill_namespaced_type(
-                    compact, field, field_type_compact,
-                    size_sequence_str, slot_type)
-            else:
-                compact = fill_basic_type(
-                    compact, field, field_type_compact,
-                    size_sequence_str)
-
+            type_field = str(field.type.value_type.typename)
+        if (field.name != 'structure_needs_at_least_one_member'):
+            compact['links'].append(link)
+            compact['field_types'].append(type_field + array_definition_str)
+            compact['field_names'].append(field.name)
     return compact

@@ -24,8 +24,8 @@ import time
       </div>
       <h2>Compact Message Definition</h2>
       <div class="compact_definition-msg">
-        @[for constant_type, constant_name in zip(constant_names, constant_types)]@
-          @(constant_name)=@(constant_type) </br>
+        @[for constant_name, constant_type in zip(constant_names, constant_types)]@
+          @(constant_type) @(constant_name)</br>
         @[end for]@
         @[for link, interface_type, interface_name, default_value in zip(links, field_types, field_names, field_default_values)]@
         @[if link != '']

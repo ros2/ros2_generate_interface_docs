@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pathlib
+
+from ament_index_python.packages import get_package_share_directory
+
 from ros2_generate_interface_docs import utils
 
-from rosidl_parser.definition import NamespacedType
-
-from rosidl_runtime_py import get_message_slot_types
-from rosidl_runtime_py.import_message import import_message_from_namespaced_type
+from rosidl_parser.definition import IdlLocator
+from rosidl_parser.definition import Message
+from rosidl_parser.parser import parse_idl_file
 
 
 def generate_msg_text_from_spec(package, interface_name, indent=0):
@@ -38,7 +41,9 @@ def generate_msg_text_from_spec(package, interface_name, indent=0):
     :returns: dictionary with the compact definition (constanst and message with links)
     :rtype: dict
     """
-    namespaced_type = NamespacedType([package, 'msg'], interface_name)
-    imported_message = import_message_from_namespaced_type(namespaced_type)
-    return utils.generate_compact_definition(
-        imported_message, indent, get_message_slot_types)
+    interface_location = IdlLocator(
+        pathlib.Path(get_package_share_directory(package)),
+        pathlib.Path('msg') / (interface_name + '.idl')
+    )
+    message = parse_idl_file(interface_location).content.get_elements_of_type(Message)
+    return utils.generate_compact_definition(message[0], indent)
