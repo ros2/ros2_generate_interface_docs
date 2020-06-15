@@ -304,7 +304,7 @@ def generate_compact_definition(imported_interface, indent):
         elif(isinstance(field.type, AbstractGenericString)):
             type_field = 'string'
             if(isinstance(field.type, BoundedString)):
-                type_field = 'string[<=' + str(field.type.maximum_size) + ']'
+                type_field = 'string[&lt;=' + str(field.type.maximum_size) + ']'
         elif(isinstance(field.type, NamespacedType)):
             type_field = '/'.join(field.type.namespaced_name())
             link = type_field + '.html'
@@ -312,7 +312,7 @@ def generate_compact_definition(imported_interface, indent):
             array_definition_str = '[]'
             type_field, link = get_field_type_and_link(field)
         elif(isinstance(field.type, BoundedSequence)):
-            array_definition_str = '[<=' + str(field.type.maximum_size) + ']'
+            array_definition_str = '[&lt;=' + str(field.type.maximum_size) + ']'
             type_field, link = get_field_type_and_link(field)
         elif(isinstance(field.type.value_type, Array)):
             if(field.type.value_type.has_maximum_size()):
@@ -322,7 +322,7 @@ def generate_compact_definition(imported_interface, indent):
         elif(isinstance(field.type.value_type, AbstractString)):
             type_field = 'string'
             if(isinstance(field.type, BoundedString)):
-                type_field = 'string[<=' + str(field.type.maximum_size) + ']'
+                type_field = 'string[&lt;=' + str(field.type.maximum_size) + ']'
         elif(isinstance(field.type.value_type, NamespacedType)):
             type_field = '/'.join(field.type.value_type.namespaced_name())
             link = type_field + '.html'
