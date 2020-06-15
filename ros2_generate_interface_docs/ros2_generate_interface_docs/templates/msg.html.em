@@ -27,9 +27,9 @@ import time
         @[for constant_name, constant_type in zip(constant_names, constant_types)]@
           @(constant_type) @(constant_name)</br>
         @[end for]@
-        @[for link, interface_type, interface_name, default_value in zip(links, field_types, field_names, field_default_values)]@
-        @[if link != '']
-        <a href="../../@(link)"> @(interface_type)</a> @(interface_name)@(default_value)</br>
+        @[for relative_path, interface_type, interface_name, default_value in zip(relative_paths, field_types, field_names, field_default_values)]@
+        @[if relative_path != '']
+        <a href="../../@(relative_path)"> @(interface_type)</a> @(interface_name)@(default_value)</br>
         @[else]
         @(interface_type)</a> @(interface_name)@(default_value)</br>
         @[end if]@

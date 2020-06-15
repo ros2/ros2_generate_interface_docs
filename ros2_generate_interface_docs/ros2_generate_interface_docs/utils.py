@@ -143,7 +143,8 @@ def generate_index(package, file_directory, interfaces, timestamp):
     package_index_data['package'] = package
     package_index_data['timestamp'] = timestamp
     if interfaces:
-        package_index_data['links'] = [package + '/' + msg + '.html' for msg in interfaces]
+        package_index_data['relative_paths'] = [
+            package + '/' + msg + '.html' for msg in interfaces]
         package_index_data['interface_list'] = interfaces
     file_output_path = os.path.join(file_directory, 'index-msg.html')
     content = evaluate_template('msg-index.html.em', package_index_data)
@@ -277,7 +278,7 @@ def generate_compact_definition(imported_interface, indent):
     compact = {
         'constant_types': [],
         'constant_names': [],
-        'links': [],
+        'relative_paths': [],
         'field_types': [],
         'field_names': [],
         'field_default_values': []
@@ -328,7 +329,7 @@ def generate_compact_definition(imported_interface, indent):
         else:
             type_field = str(field.type.value_type.typename)
         if (field.name != 'structure_needs_at_least_one_member'):
-            compact['links'].append(link)
+            compact['relative_paths'].append(link)
             compact['field_types'].append(type_field + array_definition_str)
             compact['field_names'].append(field.name)
     return compact
