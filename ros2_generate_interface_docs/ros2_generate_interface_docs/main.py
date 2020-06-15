@@ -20,9 +20,11 @@ import sys
 import time
 
 from ros2_generate_interface_docs import msg_utils
+from ros2_generate_interface_docs import srv_utils
 from ros2_generate_interface_docs import utils
 
 from rosidl_runtime_py import get_message_interfaces
+from rosidl_runtime_py import get_service_interfaces
 
 
 def generate_interfaces(interfaces, html_dir, template, interface_type):
@@ -59,6 +61,13 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
                 }
                 function_to_generate_text_from_spec = msg_utils.generate_msg_text_from_spec
 
+            if(interface_type == 'srv'):
+                documentation_data = {
+                    **documentation_data,
+                    **{'ext': 'srv', 'type': 'Service'}
+                }
+                function_to_generate_text_from_spec = srv_utils.generate_msg_text_from_spec
+
             utils.generate_interface_documentation(
                 '%s/%s' % (package_name, interface_name),
                 template,
@@ -82,6 +91,7 @@ def main(argv=sys.argv[1:]):
 
     # generate msg interfaces
     generate_interfaces(get_message_interfaces(), html_dir, 'msg.html.em', 'msg')
+    generate_interfaces(get_service_interfaces(), html_dir, 'srv.html.em', 'srv')
 
     utils.copy_css_style(html_dir)
 

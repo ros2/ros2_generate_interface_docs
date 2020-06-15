@@ -164,6 +164,21 @@ def write_template(content, output_file):
         f.write(content)
 
 
+def copy_dict_with_prefix(compact_srv, compact, suffix):
+    """
+    Copy a dictionary addind a suffix in the keys.
+
+    :param compact_srv: dictionary to set the value with the new key
+    :type compact_srv: dict
+    :param compact: dictionary to copy
+    :type compact: dict
+    :param suffix:
+    :type suffix: str
+    """
+    for key in compact.keys():
+        compact_srv[key + '_' + suffix] = compact[key]
+
+
 def evaluate_template(template_name, data):
     """
     Write the data in the template.
