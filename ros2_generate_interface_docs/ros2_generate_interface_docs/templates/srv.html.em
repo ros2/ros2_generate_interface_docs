@@ -18,7 +18,7 @@ import time
       <div class="raw-msg">
       @[for line in raw_text.splitlines()]@
         @{text = line.strip('#')}@
-        @[if '#' in line]
+        @[if line.startswith('#')]
           <a style="color:blue">#@(html.escape(text))</a><br>
         @[else]
           @(html.escape(text))<br>
