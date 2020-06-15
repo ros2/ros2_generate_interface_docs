@@ -18,11 +18,11 @@ import time
       <div class="raw-msg">
       @[for line in raw_text.splitlines()]@
         @{text = line.strip('#')}@
-        @[if line.startswith('#')]
+      @[  if line.startswith('#')]
           <a style="color:blue">#@(html.escape(text))</a><br>
-        @[else]
+      @[  else]
           @(html.escape(text))<br>
-        @[end if]@
+      @[  end if]@
       @[end for]@
       </div>
       <h2>Compact Message Definition</h2>
@@ -31,22 +31,22 @@ import time
           @(constant_type) @(constant_name)<br>
         @[end for]@
         @[for relative_path, interface_type, interface_name, default_value in zip(relative_paths_response, field_types_response, field_names_response, field_default_values_response)]@
-        @[if relative_path != '']
+        @[  if relative_path != '']
         <a href="../../@(relative_path)"> @(interface_type)</a> @(interface_name)@(default_value)<br>
-        @[else]
+        @[  else]
         @(interface_type) @(interface_name)@(default_value)<br>
-        @[end if]@
+        @[  end if]@
         @[end for]@
         <hr/>
         @[for constant_name, constant_type in zip(constant_names_request, constant_types_request)]@
           @(constant_type) @(constant_name)<br>
         @[end for]@
         @[for relative_path, interface_type, interface_name, default_value in zip(relative_paths_request, field_types_request, field_names_request, field_default_values_request)]@
-        @[if relative_path != '']
+        @[  if relative_path != '']
         <a href="../../@(relative_path)"> @(interface_type)</a> @(interface_name)@(default_value)<br>
-        @[else]
+        @[  else]
         @(interface_type) @(interface_name)@(default_value)<br>
-        @[end if]@
+        @[  end if]@
         @[end for]@
       </div>
     </div>
