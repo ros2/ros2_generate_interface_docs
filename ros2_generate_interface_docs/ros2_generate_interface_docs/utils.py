@@ -134,20 +134,22 @@ def generate_index(package, file_directory, interfaces, timestamp):
     :type package: str
     :param file_directory: directory where the index site will be located
     :type file_directory: str
-    :param interfaces: list the the interfaces associated with the package
-    :type interfaces: str
+    :param interfaces: dictionary with msgs, srvs and action for the specific package name
+    :type interfaces: dict
     :param timestamp: time to be included in all the generated files
     :type timestamp: time
     """
     package_index_data = {}
     package_index_data['package'] = package
     package_index_data['timestamp'] = timestamp
-    if interfaces:
-        package_index_data['relative_paths'] = [
-            package + '/' + msg + '.html' for msg in interfaces]
-        package_index_data['interface_list'] = interfaces
-    file_output_path = os.path.join(file_directory, 'index-msg.html')
-    content = evaluate_template('msg-index.html.em', package_index_data)
+
+    for keys in interfaces:
+        package_index_data[keys + '_relative_paths'] = [
+            package + '/' + msg + '.html' for msg in interfaces[keys]]
+        package_index_data[keys + '_list'] = interfaces[keys]
+
+    file_output_path = os.path.join(file_directory, 'index.html')
+    content = evaluate_template('index.html.em', package_index_data)
     write_template(content, file_output_path)
 
 
