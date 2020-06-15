@@ -14,11 +14,11 @@ import time
       <h2>Raw Message Definition</h2>
       <div class="raw-msg">
       @[for line in raw_text.splitlines()]@
-        @{parts = line.split('#')}@
-        @[if len(parts) > 1]
-          @(parts[0] + '<a style="color:blue">#%s</a></br>\n' % ('#'.join(parts[1:])))
+        @{text = line.strip('#')}@
+        @[if '#' in line]
+          <a style="color:blue">#@(html.escape(text))</a><br>
         @[else]
-          @(parts[0])</br>
+          @(html.escape(text))<br>
         @[end if]@
       @[end for]@
       </div>
