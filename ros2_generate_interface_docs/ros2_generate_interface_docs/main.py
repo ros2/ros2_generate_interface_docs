@@ -54,14 +54,10 @@ def generate_interfaces_index(messages, services, actions, html_dir, timestamp):
             srv_list = services[package_name]
         if package_name in actions.keys():
             action_list = actions[package_name]
-        interface_packages_dict = {
-            'msg': msg_list,
-            'srv': srv_list,
-            'action': action_list,
-        }
         package_directory = os.path.join(html_dir, package_name)
         os.makedirs(package_directory, exist_ok=True)
-        utils.generate_index(package_name, package_directory, interface_packages_dict, timestamp)
+        utils.generate_index(
+            package_name, package_directory, timestamp, msg_list, srv_list, action_list)
 
 
 def generate_interfaces(interfaces, html_dir, template, interface_type, timestamp):

@@ -126,7 +126,7 @@ def generate_interface_documentation(interface, interface_template, file_output_
     write_template(content, file_output_path)
 
 
-def generate_index(package, file_directory, interfaces, timestamp):
+def generate_index(package, file_directory, timestamp, msg_list=[], srv_list=[], action_list=[]):
     """
     Generate the message index page.
 
@@ -134,8 +134,12 @@ def generate_index(package, file_directory, interfaces, timestamp):
     :type package: str
     :param file_directory: directory where the index site will be located
     :type file_directory: str
-    :param interfaces: dictionary with msgs, srvs and action for the specific package name
-    :type interfaces: dict
+    :param msg_list: list with msgs for the specific package name
+    :type msg_list: list
+    :param msg_list: list with srvs package name
+    :type msg_list: list
+    :param msg_list: list with action for the specific package name
+    :type msg_list: list
     :param timestamp: time to be included in all the generated files
     :type timestamp: time
     """
@@ -143,10 +147,17 @@ def generate_index(package, file_directory, interfaces, timestamp):
     package_index_data['package'] = package
     package_index_data['timestamp'] = timestamp
 
-    for keys in interfaces:
-        package_index_data[keys + '_relative_paths'] = [
-            package + '/' + msg + '.html' for msg in interfaces[keys]]
-        package_index_data[keys + '_list'] = interfaces[keys]
+    package_index_data['msg_relative_paths'] = [
+        package + '/' + msg + '.html' for msg in msg_list]
+    package_index_data['msg_list'] = msg_list
+
+    package_index_data['srv_relative_paths'] = [
+        package + '/' + srv + '.html' for srv in srv_list]
+    package_index_data['srv_list'] = srv_list
+
+    package_index_data['action_relative_paths'] = [
+        package + '/' + action + '.html' for action in action_list]
+    package_index_data['action_list'] = action_list
 
     file_output_path = os.path.join(file_directory, 'index.html')
     content = evaluate_template('index.html.em', package_index_data)
