@@ -42,7 +42,7 @@ def generate_interfaces_index(messages, services, actions, html_dir, timestamp):
     :param timestamp: timestamp to include in the index site
     :param timestamp: time.struct_time
     """
-    interface_packages = list(messages.keys()) + list(services.keys()) + list(actions.keys())
+    interface_packages = set(list(messages.keys()) + list(services.keys()) + list(actions.keys()))
 
     for package_name in interface_packages:
         msg_list = []
