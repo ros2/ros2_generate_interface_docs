@@ -63,9 +63,9 @@ def generate_msg_text_from_spec(package, interface_name, indent=0):
     }
 
     compact_request = utils.generate_compact_definition(message[0].request_message, indent)
-    utils.copy_dict_with_prefix(compact_srv, compact_request, 'request')
+    utils.copy_dict_with_suffix(compact_srv, compact_request, 'request')
 
     compact_response = utils.generate_compact_definition(message[0].response_message, indent)
-    utils.copy_dict_with_prefix(compact_srv, compact_response, 'response')
+    utils.copy_dict_with_suffix(compact_srv, compact_response, 'response')
 
     return compact_srv

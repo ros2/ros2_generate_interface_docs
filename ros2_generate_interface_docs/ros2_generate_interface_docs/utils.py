@@ -177,19 +177,19 @@ def write_template(content, output_file):
         f.write(content)
 
 
-def copy_dict_with_prefix(compact_srv, compact, suffix):
+def copy_dict_with_suffix(destination, source, suffix):
     """
     Copy a dictionary addind a suffix in the keys.
 
-    :param compact_srv: dictionary to set the value with the new key
-    :type compact_srv: dict
-    :param compact: dictionary to copy
-    :type compact: dict
+    :param destination: dictionary to set the value with the new key
+    :type destination: dict
+    :param source: dictionary to copy
+    :type source: dict
     :param suffix:
     :type suffix: str
     """
-    for key in compact.keys():
-        compact_srv[key + '_' + suffix] = compact[key]
+    for key, value in source.items():
+        destination['{}_{}'.format(key, suffix)] = value
 
 
 def evaluate_template(template_name, data):
