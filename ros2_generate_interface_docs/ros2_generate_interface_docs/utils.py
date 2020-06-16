@@ -166,7 +166,7 @@ def write_template(content, output_file):
 
 def copy_dict_with_suffix(destination, source, suffix):
     """
-    Copy a dictionary addind a suffix in the keys.
+    Copy a dictionary and add a suffix to each key.
 
     :param destination: dictionary to set the value with the new key
     :type destination: dict
