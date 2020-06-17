@@ -47,20 +47,7 @@ def generate_msg_text_from_spec(package, interface_name, indent=0):
     )
     message = parse_idl_file(interface_location).content.get_elements_of_type(Service)
 
-    compact_srv = {
-        'constant_types_response': [],
-        'constant_names_response': [],
-        'relative_paths_response': [],
-        'field_types_response': [],
-        'field_names_response': [],
-        'field_default_values_response': [],
-        'constant_types_request': [],
-        'constant_names_request': [],
-        'relative_paths_request': [],
-        'field_types_request': [],
-        'field_names_request': [],
-        'field_default_values_request': []
-    }
+    compact_srv = {}
 
     compact_request = utils.generate_compact_definition(message[0].request_message, indent)
     utils.copy_dict_with_suffix(compact_srv, compact_request, 'request')
