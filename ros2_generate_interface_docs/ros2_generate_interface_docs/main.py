@@ -19,6 +19,7 @@ import os
 import sys
 import time
 
+from ros2_generate_interface_docs import action_utils
 from ros2_generate_interface_docs import msg_utils
 from ros2_generate_interface_docs import srv_utils
 from ros2_generate_interface_docs import utils
@@ -102,6 +103,13 @@ def generate_interfaces(interfaces, html_dir, template, interface_type, timestam
                 }
                 function_to_generate_text_from_spec = srv_utils.generate_msg_text_from_spec
 
+            if(interface_type == 'action'):
+                documentation_data = {
+                    **documentation_data,
+                    **{'ext': 'action', 'type': 'Action'}
+                }
+                function_to_generate_text_from_spec = action_utils.generate_msg_text_from_spec
+
             utils.generate_interface_documentation(
                 '%s/%s' % (package_name, interface_name),
                 template,
@@ -134,6 +142,7 @@ def main(argv=sys.argv[1:]):
     # generate msg interfaces
     generate_interfaces(get_message_interfaces(), html_dir, 'msg.html.em', 'msg', timestamp)
     generate_interfaces(get_service_interfaces(), html_dir, 'srv.html.em', 'srv', timestamp)
+    generate_interfaces(get_action_interfaces(), html_dir, 'action.html.em', 'action', timestamp)
 
     utils.copy_css_style(html_dir)
 
