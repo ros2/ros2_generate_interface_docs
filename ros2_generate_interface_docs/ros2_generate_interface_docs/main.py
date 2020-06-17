@@ -23,6 +23,7 @@ from ros2_generate_interface_docs import msg_utils
 from ros2_generate_interface_docs import srv_utils
 from ros2_generate_interface_docs import utils
 
+from rosidl_runtime_py import get_action_interfaces
 from rosidl_runtime_py import get_message_interfaces
 from rosidl_runtime_py import get_service_interfaces
 
@@ -131,8 +132,8 @@ def main(argv=sys.argv[1:]):
     generate_interfaces_index(messages, services, actions, html_dir, timestamp)
 
     # generate msg interfaces
-    generate_interfaces(get_message_interfaces(), html_dir, 'msg.html.em', 'msg')
-    generate_interfaces(get_service_interfaces(), html_dir, 'srv.html.em', 'srv')
+    generate_interfaces(get_message_interfaces(), html_dir, 'msg.html.em', 'msg', timestamp)
+    generate_interfaces(get_service_interfaces(), html_dir, 'srv.html.em', 'srv', timestamp)
 
     utils.copy_css_style(html_dir)
 
