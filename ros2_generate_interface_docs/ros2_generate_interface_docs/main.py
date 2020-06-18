@@ -53,10 +53,8 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
             }
 
             if(interface_type == 'msg'):
-                documentation_data = {
-                    **documentation_data,
-                    **{'ext': 'msg', 'type': 'Message'}
-                }
+                documentation_data['ext'] = 'msg'
+                documentation_data['type'] = 'Message'
                 function_to_generate_text_from_spec = msg_utils.generate_msg_text_from_spec
 
             utils.generate_interface_documentation(
