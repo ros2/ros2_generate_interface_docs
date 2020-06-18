@@ -52,7 +52,7 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
                 'timestamp': timestamp
             }
 
-            if(interface_type == 'msg'):
+            if interface_type == 'msg':
                 documentation_data = {
                     **documentation_data,
                     **{'ext': 'msg', 'type': 'Message'}
