@@ -61,11 +61,9 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
                 }
                 function_to_generate_text_from_spec = msg_utils.generate_msg_text_from_spec
 
-            if(interface_type == 'srv'):
-                documentation_data = {
-                    **documentation_data,
-                    **{'ext': 'srv', 'type': 'Service'}
-                }
+            if interface_type == 'srv':
+                documentation_data['ext'] = 'msg'
+                documentation_data['type'] = 'Service'
                 function_to_generate_text_from_spec = srv_utils.generate_msg_text_from_spec
 
             utils.generate_interface_documentation(
