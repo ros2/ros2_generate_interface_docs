@@ -101,11 +101,9 @@ def generate_interfaces(interfaces, html_dir, template, interface_type, timestam
                 documentation_data['type'] = 'Service'
                 function_to_generate_text_from_spec = srv_utils.generate_msg_text_from_spec
 
-            if(interface_type == 'action'):
-                documentation_data = {
-                    **documentation_data,
-                    **{'ext': 'action', 'type': 'Action'}
-                }
+            if interface_type == 'action':
+                documentation_data['ext'] = 'action'
+                documentation_data['type'] = 'Action'
                 function_to_generate_text_from_spec = action_utils.generate_msg_text_from_spec
 
             utils.generate_interface_documentation(
