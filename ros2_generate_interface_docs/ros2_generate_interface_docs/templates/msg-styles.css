@@ -47,3 +47,8 @@ a:hover {
     border: 1px solid #333;
     margin-bottom: 20px;
 }
+
+.footer {
+  font-size: small;
+  font-style: italic;
+}
