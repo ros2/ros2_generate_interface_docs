@@ -49,13 +49,8 @@ def generate_msg_text_from_spec(package, interface_name, indent=0):
 
     compact_srv = {}
 
-    compact_goal = utils.generate_compact_definition(message[0].goal, indent)
-    utils.copy_dict_with_suffix(compact_srv, compact_goal, 'goal')
-
-    compact_result = utils.generate_compact_definition(message[0].result, indent)
-    utils.copy_dict_with_suffix(compact_srv, compact_result, 'result')
-
-    compact_feedback = utils.generate_compact_definition(message[0].feedback, indent)
-    utils.copy_dict_with_suffix(compact_srv, compact_feedback, 'feedback')
+    for attribute in ['goal', 'result', 'feedback']:
+        definition = utils.generate_compact_definition(getattr(message[0], attribute), indent)
+        utils.copy_dict_with_suffix(compact_srv, definition, attribute)
 
     return compact_srv
