@@ -227,9 +227,9 @@ def get_field_type_and_link(field):
     :rtype: str, str
     """
     link = ''
-    if(isinstance(field.type.value_type, AbstractGenericString)):
+    if isinstance(field.type.value_type, AbstractGenericString):
         type_field = 'string'
-    elif(isinstance(field.type.value_type, NamespacedType)):
+    elif isinstance(field.type.value_type, NamespacedType):
         type_field = '/'.join(field.type.value_type.namespaced_name())
         link = type_field + '.html'
     else:
@@ -252,9 +252,9 @@ def read_constants(imported_interface, compact):
     constants = imported_interface.constants
     for constant in constants:
         compact['constant_names'].append(constant.name + '=' + str(constant.value))
-        if(isinstance(constant.type, BasicType)):
+        if isinstance(constant.type, BasicType):
             compact['constant_types'].append(constant.type.typename)
-        elif(isinstance(constant.type, AbstractGenericString)):
+        elif isinstance(constant.type, AbstractGenericString):
             compact['constant_types'].append('string')
     return compact
 
@@ -268,7 +268,7 @@ def read_default(field):
     :returns: dictionary with the compact definition (constanst and message with links)
     :rtype: dict
     """
-    if(field.has_annotations('default')):
+    if field.has_annotations('default'):
         return '=' + str(field.get_annotation_values('default')[0]['value'])
     else:
         return ''
@@ -308,42 +308,42 @@ def generate_compact_definition(imported_interface, indent):
         type_field = ''
         array_definition_str = ''
         link = ''
-        if(isinstance(field.type, BasicType)):
+        if isinstance(field.type, BasicType):
             type_field = field.type.typename
-        elif(isinstance(field.type, Array)):
+        elif isinstance(field.type, Array):
             type_field, link = get_field_type_and_link(field)
-            if(field.type.has_maximum_size()):
+            if field.type.has_maximum_size():
                 array_definition_str = '[' + str(field.type.size) + ']'
             else:
                 array_definition_str = '[]'
-        elif(isinstance(field.type, AbstractGenericString)):
+        elif isinstance(field.type, AbstractGenericString):
             type_field = 'string'
-            if(isinstance(field.type, BoundedString)):
+            if isinstance(field.type, BoundedString):
                 type_field = 'string[&lt;=' + str(field.type.maximum_size) + ']'
-        elif(isinstance(field.type, NamespacedType)):
+        elif isinstance(field.type, NamespacedType):
             type_field = '/'.join(field.type.namespaced_name())
             link = type_field + '.html'
-        elif(isinstance(field.type, UnboundedSequence)):
+        elif isinstance(field.type, UnboundedSequence):
             array_definition_str = '[]'
             type_field, link = get_field_type_and_link(field)
-        elif(isinstance(field.type, BoundedSequence)):
+        elif isinstance(field.type, BoundedSequence):
             array_definition_str = '[&lt;=' + str(field.type.maximum_size) + ']'
             type_field, link = get_field_type_and_link(field)
-        elif(isinstance(field.type.value_type, Array)):
-            if(field.type.value_type.has_maximum_size()):
+        elif isinstance(field.type.value_type, Array):
+            if field.type.value_type.has_maximum_size():
                 array_definition_str = '[]'
             else:
                 array_definition_str = '[' + field.type.value_type.maximum_size + ']'
-        elif(isinstance(field.type.value_type, AbstractString)):
+        elif isinstance(field.type.value_type, AbstractString):
             type_field = 'string'
-            if(isinstance(field.type, BoundedString)):
+            if isinstance(field.type, BoundedString):
                 type_field = 'string[&lt;=' + str(field.type.maximum_size) + ']'
-        elif(isinstance(field.type.value_type, NamespacedType)):
+        elif isinstance(field.type.value_type, NamespacedType):
             type_field = '/'.join(field.type.value_type.namespaced_name())
             link = type_field + '.html'
         else:
             type_field = str(field.type.value_type.typename)
-        if (field.name != 'structure_needs_at_least_one_member'):
+        if field.name != 'structure_needs_at_least_one_member':
             compact['relative_paths'].append(link)
             compact['field_types'].append(type_field + array_definition_str)
             compact['field_names'].append(field.name)
