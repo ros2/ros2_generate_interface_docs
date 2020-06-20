@@ -14,7 +14,7 @@ import time
       <h1>@(package) Message Documentation</h1>
       <ul>
 @[  for relative_path, msg in zip(msg_relative_paths, msg_list)]@
-        <li><a href="../../html/@(relative_path)">@(msg)</a></li>
+        <li><a href="../@(relative_path)">@(msg)</a></li>
 @[  end for]@
       </ul>
 @[end if]@
@@ -22,7 +22,7 @@ import time
       <h1>@(package) Service Documentation</h1>
       <ul>
 @[  for relative_path, srv in zip(srv_relative_paths, srv_list)]@
-        <li><a href="../../html/@(relative_path)">@(srv)</a></li>
+        <li><a href="../@(relative_path)">@(srv)</a></li>
 @[  end for]@
       </ul>
 @[end if]@
@@ -30,7 +30,7 @@ import time
       <h1>@(package) Action Documentation</h1>
       <ul>
 @[  for relative_path, action in zip(action_relative_paths, action_list)]@
-        <li><a href="../../html/@(relative_path)">@(action)</a></li>
+        <li><a href="../@(relative_path)">@(action)</a></li>
 @[  end for]@
       </ul>
 @[end if]@
