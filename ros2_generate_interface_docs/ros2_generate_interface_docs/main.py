@@ -23,11 +23,45 @@ from ros2_generate_interface_docs import msg_utils
 from ros2_generate_interface_docs import srv_utils
 from ros2_generate_interface_docs import utils
 
+from rosidl_runtime_py import get_action_interfaces
 from rosidl_runtime_py import get_message_interfaces
 from rosidl_runtime_py import get_service_interfaces
 
 
-def generate_interfaces(interfaces, html_dir, template, interface_type):
+def generate_interfaces_index(messages, services, actions, html_dir, timestamp):
+    """
+    Generate index for packages.
+
+    :param messages: Dictionay with the message package as a key and a list message names as value
+    :param type: dict
+    :param services: Dictionay with the service package as a key and a list sercice names as value
+    :param type: dict
+    :param actions: Dictionay with the action package as a key and a list action names as value
+    :param type: dict
+    :param html_dir: path to the directory to save the index
+    :type html_dir: str
+    :param timestamp: timestamp to include in the index site
+    :param timestamp: time.struct_time
+    """
+    interface_packages = messages.keys() | services.keys() | actions.keys()
+
+    for package_name in interface_packages:
+        msg_list = []
+        srv_list = []
+        action_list = []
+        if package_name in messages.keys():
+            msg_list = messages[package_name]
+        if package_name in services.keys():
+            srv_list = services[package_name]
+        if package_name in actions.keys():
+            action_list = actions[package_name]
+        package_directory = os.path.join(html_dir, package_name)
+        os.makedirs(package_directory, exist_ok=True)
+        utils.generate_index(
+            package_name, package_directory, timestamp, msg_list, srv_list, action_list)
+
+
+def generate_interfaces(interfaces, html_dir, template, interface_type, timestamp):
     """
     Generate the index and documentation for each message.
 
@@ -40,13 +74,13 @@ def generate_interfaces(interfaces, html_dir, template, interface_type):
     :type template_dir: str
     :param interface_type: type of the interface: msg, action or srv
     :type interface_type: str
+    :param timestamp: timestamp to include in the index site
+    :param timestamp: time.struct_time
     """
-    timestamp = time.gmtime()
     for package_name, interface_names in interfaces.items():
         package_directory = os.path.join(html_dir, package_name)
         interface_type_directory = os.path.join(package_directory, interface_type)
         os.makedirs(interface_type_directory, exist_ok=True)
-        utils.generate_index(package_name, package_directory, interfaces[package_name], timestamp)
         for interface_name in interface_names:
             documentation_data = {
                 'interface_name': interface_name,
@@ -85,9 +119,17 @@ def main(argv=sys.argv[1:]):
     html_dir = os.path.join(args.outputdir, 'html')
     os.makedirs(html_dir, exist_ok=True)
 
+    messages = get_message_interfaces()
+    services = get_service_interfaces()
+    actions = get_action_interfaces()
+
+    timestamp = time.gmtime()
+
+    generate_interfaces_index(messages, services, actions, html_dir, timestamp)
+
     # generate msg interfaces
-    generate_interfaces(get_message_interfaces(), html_dir, 'msg.html.em', 'msg')
-    generate_interfaces(get_service_interfaces(), html_dir, 'srv.html.em', 'srv')
+    generate_interfaces(get_message_interfaces(), html_dir, 'msg.html.em', 'msg', timestamp)
+    generate_interfaces(get_service_interfaces(), html_dir, 'srv.html.em', 'srv', timestamp)
 
     utils.copy_css_style(html_dir)
 
