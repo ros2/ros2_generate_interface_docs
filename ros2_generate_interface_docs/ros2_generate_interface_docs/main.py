@@ -120,6 +120,11 @@ def main(argv=sys.argv[1:]):
     parser.add_argument(
         '--outputdir', type=str, default='api',
         help='Output directory')
+    parser.add_argument(
+        '--packages-select',
+        default='',
+        nargs='*',
+        help='Generate the documentation for the following package names')
     args = parser.parse_args(argv)
 
     html_dir = os.path.join(args.outputdir, 'html')
@@ -129,14 +134,19 @@ def main(argv=sys.argv[1:]):
     services = get_service_interfaces()
     actions = get_action_interfaces()
 
+    if len(args.packages_select) > 0:
+        messages = {k: v for k, v in messages.items() if k in args.packages_select}
+        services = {k: v for k, v in services.items() if k in args.packages_select}
+        actions = {k: v for k, v in actions.items() if k in args.packages_select}
+
     timestamp = time.gmtime()
 
     generate_interfaces_index(messages, services, actions, html_dir, timestamp)
 
     # generate msg interfaces
-    generate_interfaces(get_message_interfaces(), html_dir, 'msg.html.em', 'msg', timestamp)
-    generate_interfaces(get_service_interfaces(), html_dir, 'srv.html.em', 'srv', timestamp)
-    generate_interfaces(get_action_interfaces(), html_dir, 'action.html.em', 'action', timestamp)
+    generate_interfaces(messages, html_dir, 'msg.html.em', 'msg', timestamp)
+    generate_interfaces(services, html_dir, 'srv.html.em', 'srv', timestamp)
+    generate_interfaces(actions, html_dir, 'action.html.em', 'action', timestamp)
 
     utils.copy_css_style(html_dir)
 
