@@ -120,23 +120,35 @@ def main(argv=sys.argv[1:]):
     parser.add_argument(
         '--outputdir', type=str, default='api',
         help='Output directory')
+    parser.add_argument(
+        '--packages-select',
+        default=[],
+        nargs='*',
+        help='Generate the documentation for the following package names')
     args = parser.parse_args(argv)
 
     html_dir = os.path.join(args.outputdir, 'html')
     os.makedirs(html_dir, exist_ok=True)
 
-    messages = get_message_interfaces()
-    services = get_service_interfaces()
-    actions = get_action_interfaces()
+    try:
+        messages = get_message_interfaces(args.packages_select)
+        services = get_service_interfaces(args.packages_select)
+        actions = get_action_interfaces(args.packages_select)
+    except LookupError as e:
+        print(
+            f'Package name {args.packages_select} is not defined. Reason: {e}',
+            file=sys.stderr
+        )
+        exit(-1)
 
     timestamp = time.gmtime()
 
     generate_interfaces_index(messages, services, actions, html_dir, timestamp)
 
     # generate msg interfaces
-    generate_interfaces(get_message_interfaces(), html_dir, 'msg.html.em', 'msg', timestamp)
-    generate_interfaces(get_service_interfaces(), html_dir, 'srv.html.em', 'srv', timestamp)
-    generate_interfaces(get_action_interfaces(), html_dir, 'action.html.em', 'action', timestamp)
+    generate_interfaces(messages, html_dir, 'msg.html.em', 'msg', timestamp)
+    generate_interfaces(services, html_dir, 'srv.html.em', 'srv', timestamp)
+    generate_interfaces(actions, html_dir, 'action.html.em', 'action', timestamp)
 
     utils.copy_css_style(html_dir)
 
