@@ -136,7 +136,7 @@ def main(argv=sys.argv[1:]):
         actions = get_action_interfaces(args.packages_select)
     except LookupError as e:
         print(
-            'Package name {} is not defined. Reason: {}'.format(args.packages_select, e),
+            f'Package name {args.packages_select} is not defined. Reason: {e}',
             file=sys.stderr
         )
         exit(-1)
