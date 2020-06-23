@@ -134,11 +134,11 @@ def generate_index(package, file_directory, timestamp, msg_list=[], srv_list=[],
     :type package: str
     :param file_directory: directory where the index site will be located
     :type file_directory: str
-    :param msg_list: messages for the specific package name
+    :param msg_list: name of messages for the specific package name
     :type msg_list: list
-    :param msg_list: services package name
+    :param msg_list: name of services package name
     :type msg_list: list
-    :param msg_list: actions for the specific package name
+    :param msg_list: name of actions for the specific package name
     :type msg_list: list
     :param timestamp: time to be included in all the generated files
     :type timestamp: time

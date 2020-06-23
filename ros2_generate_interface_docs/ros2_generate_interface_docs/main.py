@@ -32,11 +32,11 @@ def generate_interfaces_index(messages, services, actions, html_dir, timestamp):
     """
     Generate index for packages.
 
-    :param messages: Message package as a key and a list message names as value
+    :param messages: Message package name as a key and a list of message names as value
     :param type: dict
-    :param services: Service package as a key and a list sercice names as value
+    :param services: Service package name as a key and a list of service names as value
     :param type: dict
-    :param actions: Action package as a key and a list action names as value
+    :param actions: Action package name as a key and a list of action names as value
     :param type: dict
     :param html_dir: path to the directory to save the index
     :type html_dir: str
