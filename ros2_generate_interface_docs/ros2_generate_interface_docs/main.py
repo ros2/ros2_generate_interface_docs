@@ -122,7 +122,7 @@ def main(argv=sys.argv[1:]):
         help='Output directory')
     parser.add_argument(
         '--packages-select',
-        default='',
+        default=[],
         nargs='*',
         help='Generate the documentation for the following package names')
     args = parser.parse_args(argv)
@@ -130,14 +130,13 @@ def main(argv=sys.argv[1:]):
     html_dir = os.path.join(args.outputdir, 'html')
     os.makedirs(html_dir, exist_ok=True)
 
-    messages = get_message_interfaces()
-    services = get_service_interfaces()
-    actions = get_action_interfaces()
-
-    if len(args.packages_select) > 0:
-        messages = {k: v for k, v in messages.items() if k in args.packages_select}
-        services = {k: v for k, v in services.items() if k in args.packages_select}
-        actions = {k: v for k, v in actions.items() if k in args.packages_select}
+    try:
+        messages = get_message_interfaces(args.packages_select)
+        services = get_service_interfaces(args.packages_select)
+        actions = get_action_interfaces(args.packages_select)
+    except LookupError as e:
+        print('Package name is not defined. Reason: {}'.format(e))
+        exit(-1)
 
     timestamp = time.gmtime()
 
