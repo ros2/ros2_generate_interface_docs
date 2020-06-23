@@ -135,7 +135,10 @@ def main(argv=sys.argv[1:]):
         services = get_service_interfaces(args.packages_select)
         actions = get_action_interfaces(args.packages_select)
     except LookupError as e:
-        print('Package name is not defined. Reason: {}'.format(e))
+        print(
+            'Package name {} is not defined. Reason: {}'.format(args.packages_select, e),
+            file=sys.stderr
+        )
         exit(-1)
 
     timestamp = time.gmtime()
