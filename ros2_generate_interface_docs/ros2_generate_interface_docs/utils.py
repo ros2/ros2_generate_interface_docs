@@ -159,7 +159,7 @@ def generate_index(package, file_directory, timestamp, msg_list=[], srv_list=[],
         package + '/' + action + '.html' for action in action_list]
     package_index_data['action_list'] = action_list
 
-    file_output_path = os.path.join(file_directory, 'index.html')
+    file_output_path = os.path.join(file_directory, 'index-msg.html')
     content = evaluate_template('index.html.em', package_index_data)
     write_template(content, file_output_path)
 
