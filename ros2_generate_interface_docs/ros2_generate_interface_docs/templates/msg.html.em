@@ -19,7 +19,7 @@ import time
 @[for line in raw_text.splitlines()]@
 @{  text = line.strip('#')}@
 @[  if '#' in line]@
-          <div class="raw-msg-text">#@(html.escape(text))</div><br>
+          <div class="comment-text">#@(html.escape(text))</div><br>
 @[  else]@
           @(html.escape(text))<br>
 @[  end if]@
