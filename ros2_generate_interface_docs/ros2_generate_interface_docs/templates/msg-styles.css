@@ -38,6 +38,10 @@ a:hover {
     margin-bottom: 20px;
 }
 
+.comment-text {
+  color: blue;
+}
+
 .raw-msg {
     font-family: monospace;
     width: auto;
